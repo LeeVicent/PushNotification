@@ -11,9 +11,6 @@
         android:hint="@string/title"
         style="@style/EtTheme"/>
 
-
-
-
     <EditText
         android:id="@+id/content"
         android:layout_width="match_parent"
