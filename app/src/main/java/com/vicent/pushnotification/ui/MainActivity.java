@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void Test(){
-        //Git测试
+        //Git测试2
         int a = 10;
     }
 
