@@ -45,18 +45,4 @@ public class MainActivity extends AppCompatActivity {
         int a = 10;
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        /**
-         *如果从图标打开此活动，则传进来的 Intent 将不携带任何 Extra ，
-         *若是这样，获取到的文本将都为 "" ，notifID 将产生一个新的值,即 id++
-         */
-        String head = intent.getStringExtra("title");
-        String cont = intent.getStringExtra("content");
-        notifID = intent.getIntExtra("id",id++);
-        title.setText(head);
-        content.setText(cont);
-        Log.d(TAG, "onNewIntent: "+ head + " "+cont +" "+ notifID);
-    }
 }
