@@ -6,9 +6,15 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ViewAnimator;
 
 import com.vicent.pushnotification.R;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText title;
     private EditText content;
+    private TextView revocation;
+    private TextView push;
     private NotificationManagerCompat manager;
     private int id = 1;
     private int notifID;
@@ -38,6 +46,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        findViews();
+    }
+
+
+    private void findViews() {
+        title = (EditText)findViewById(R.id.title);
+        content = (EditText)findViewById(R.id.content);
+        revocation = (TextView)findViewById(R.id.revocation);
+        push = (TextView)findViewById(R.id.push);
+    }
+
+    public void onRevocationClick(View view) {
+        Toast.makeText(
+                MainActivity.this,
+                "测试消息",
+                Toast.LENGTH_SHORT
+        );
+        revocation.setText("呵呵");
     }
 
     public void Test(){
