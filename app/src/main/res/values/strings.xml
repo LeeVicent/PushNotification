@@ -3,11 +3,23 @@
     <string name="app_version">推送通知 V1.0</string>
     <string name="add_new_title">推送通知主界面入口</string>
     <string name="add_new_content">点击添加新通知</string>
-    <string name="title">输入标题</string>
-    <string name="content">输入内容</string>
-    <string name="negative">撤销</string>
-    <string name="positive">通知</string>
-    <string name="alert">内容输入框内未发现有效字符存在(需非标点且大于两位)</string>
+    <string name="title_hint">输入标题</string>
+    <string name="content_hint">输入内容</string>
+    <string name="alarm_text">闹钟</string>
+    <string name="revocation_text">撤销</string>
+    <string name="push_text">通知</string>
+
+
+
+
+
+
+
+
+
+
+
+
 
     <string name="hint">选择需要的短句</string>
     <!--<string name="close">取消</string>-->

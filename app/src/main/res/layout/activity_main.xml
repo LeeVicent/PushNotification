@@ -2,17 +2,28 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/title"
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/title_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/title"
-        style="@style/EtTheme"/>
+        android:layout_marginTop="10dp">
 
-    <EditText
-        android:id="@+id/content"
+        <AutoCompleteTextView
+            android:id="@+id/title_auto"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:hint="@string/title_hint"
+            android:maxLines="1"
+            android:singleLine="true" />
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/content_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/title"
@@ -20,26 +31,33 @@
         style="@style/EtTheme"/>
 
     <TextView
+        android:id="@+id/alarm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/content_layout"
+        android:layout_alignParentStart="true"
+        android:text="@string/alarm_text"
+        style="@style/BtnTheme"/>
+
+    <TextView
         android:id="@+id/revocation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/content"
-        android:layout_alignParentStart="true"
-        android:onClick="onRevocationClick"
-        android:text="@string/negative"
+        android:layout_below="@+id/content_layout"
+        android:layout_centerHorizontal="true"
+        android:layout_alignBaseline="@id/alarm"
+        android:text="@string/revocation_text"
         style="@style/BtnTheme"/>
-
 
     <TextView
         android:id="@+id/push"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/content"
+        android:layout_below="@+id/content_layout"
         android:layout_alignParentEnd="true"
         android:layout_alignBaseline="@id/revocation"
-        android:text="@string/positive"
+        android:text="@string/push_text"
         android:textColor="@color/posColor"
         style="@style/BtnTheme"/>
-
 
 </RelativeLayout>
