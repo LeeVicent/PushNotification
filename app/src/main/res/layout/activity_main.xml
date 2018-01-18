@@ -26,9 +26,17 @@
         android:id="@+id/content_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/title"
-        android:hint="@string/content"
-        style="@style/EtTheme"/>
+        android:layout_below="@id/title_layout">
+
+        <AutoCompleteTextView
+            android:id="@+id/content_auto"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:hint="@string/content_hint"
+            android:maxLines="1"
+            android:singleLine="true" />
+    </android.support.design.widget.TextInputLayout>
 
     <TextView
         android:id="@+id/alarm"
