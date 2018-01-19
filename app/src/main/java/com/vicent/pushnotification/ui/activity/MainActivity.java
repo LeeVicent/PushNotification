@@ -3,7 +3,12 @@ package com.vicent.pushnotification.ui.activity;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.graphics.BitmapFactory;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,6 +21,7 @@ import android.widget.Toast;
 
 import com.vicent.pushnotification.R;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 
 
@@ -26,7 +32,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView revoke_tv;
     private TextView push_tv;
 
+    private ArrayList notifID = new ArrayList();   //已发送通知ID数组
     private int mHour, mMinute;
+    private String title_text;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,10 +84,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             //撤销按钮响应事件
             case R.id.revoke_tv:
+                break;
 
             //推送按钮响应事件
-                break;
             case R.id.push_tv:
+                Toast.makeText(this, "通知", Toast.LENGTH_SHORT).show();
+                createNotification();
                 break;
         }
     }
@@ -92,8 +103,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //创建通知
     public void createNotification() {
-
-
+        this.notifID.add(notifID.size() + 1);   //ID自增并保存(从1开始）
+        NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        Notification notification = new NotificationCompat.Builder(this)
+                .setContentTitle("ID:" + notifID.get(notifID.size() - 1).toString())
+                .setContentText("dsd")
+                .setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
+                .build();
+        manager.notify(this.notifID.size(), notification);
 
     }
 
