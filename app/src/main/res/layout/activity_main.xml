@@ -52,22 +52,22 @@
         style="@style/BtnTheme"/>
 
     <TextView
-        android:id="@+id/revocation"
+        android:id="@+id/revoke_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/content_layout"
         android:layout_centerHorizontal="true"
         android:layout_alignBaseline="@id/alarm_iv"
-        android:text="@string/revocation_text"
+        android:text="@string/revoke_text"
         style="@style/BtnTheme"/>
 
     <TextView
-        android:id="@+id/push"
+        android:id="@+id/push_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/content_layout"
         android:layout_alignParentEnd="true"
-        android:layout_alignBaseline="@id/revocation"
+        android:layout_alignBaseline="@id/revoke_tv"
         android:text="@string/push_text"
         android:textColor="@color/posColor"
         style="@style/BtnTheme"/>

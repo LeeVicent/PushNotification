@@ -6,7 +6,7 @@
     <string name="title_hint">输入标题</string>
     <string name="content_hint">输入内容</string>
     <string name="alarm_text">闹钟</string>
-    <string name="revocation_text">撤销</string>
+    <string name="revoke_text">撤销</string>
     <string name="push_text">通知</string>
 
 
