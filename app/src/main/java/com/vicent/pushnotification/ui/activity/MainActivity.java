@@ -1,16 +1,18 @@
 package com.vicent.pushnotification.ui.activity;
 
 
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
@@ -33,17 +35,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView push_tv;
 
     private ArrayList notifID = new ArrayList();   //已发送通知ID数组
+    private int notifCount = 0;
     private int mHour, mMinute;
     private String title_text;
+    private String content_text;
 
+    private SharedPreferences.Editor save_editor;   //SharedPreferences保存
+    private SharedPreferences recover_pre;  //SharedPreferences恢复
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         findViews();
-
         setOnClickListeners();
+        onNewIntent(getIntent());
+
+        //恢复notifCount计数
+        recover_pre = getSharedPreferences("data", MODE_PRIVATE);
+        notifCount = recover_pre.getInt("notifCount", 0);
+    }
+
+    //注意onNewIntent参数为传来的Intent
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        title_auto.setText(intent.getStringExtra("title_text"));
+        content_auto.setText(intent.getStringExtra("content_text"));
     }
 
     private void findViews(){
@@ -85,37 +103,67 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             //撤销按钮响应事件
             case R.id.revoke_tv:
+                getText();
                 break;
 
             //推送按钮响应事件
             case R.id.push_tv:
-                Toast.makeText(this, "通知", Toast.LENGTH_SHORT).show();
-                createNotification();
+                if (getText()){   //EditText内有内容
+                    createNotification();
+                }
+                else {   //EditText内无内容，进行警告
+
+                }
+                finish();
                 break;
         }
     }
 
-    
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
 
 
     //创建通知
     public void createNotification() {
-        this.notifID.add(notifID.size() + 1);   //ID自增并保存(从1开始）
+
+        notifCount++;
+        Intent intent = new Intent(this, MainActivity.class);  //单击消息意图
+        intent.putExtra("title_text", title_text);   //Intent带有title_text信息
+        intent.putExtra("content_text", content_text);
+        //注意PendingIntent.getActivity的第二个参数，自行查阅文档
+        PendingIntent pi = PendingIntent.getActivity(this, notifCount, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
         Notification notification = new NotificationCompat.Builder(this)
-                .setContentTitle("ID:" + notifID.get(notifID.size() - 1).toString())
-                .setContentText("dsd")
+                .setContentTitle(title_text)
+                .setContentText(content_text)
                 .setWhen(System.currentTimeMillis())
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
+                .setContentIntent(pi)   //设置回调，延迟Intent
                 .build();
-        manager.notify(this.notifID.size(), notification);
+        manager.notify(notifCount, notification);
 
+        //SharedPreferences形式持久化保存notifCount计数，防止Activity销毁后重新计数
+        save_editor = getSharedPreferences("data", MODE_PRIVATE).edit();
+        save_editor.putInt("notifCount", notifCount);
+        save_editor.apply();
     }
+
+    //断言EditText为空并取值
+    public boolean getText(){
+        if (title_auto.length() != 0 || content_auto.length() != 0){
+            title_text = title_auto.getText().toString();
+            content_text = content_auto.getText().toString();
+            Log.i(this.getClass().getName(), "不为空");
+            return true;
+        }
+        else {
+            Log.i(this.getClass().getName(), "为空");
+            return false;
+        }
+    }
+
+    //TODO 单击消息响应
+
 
 }
 
