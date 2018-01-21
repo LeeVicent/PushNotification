@@ -6,10 +6,15 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.BitmapFactory;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -27,6 +32,7 @@ import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.graphics.drawable.Drawable;
 import android.widget.Toast;
+import com.vicent.pushnotification.unti.DatabaseHelper;
 
 
 import com.vicent.pushnotification.R;
@@ -43,14 +49,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView revoke_tv;
     private TextView push_tv;
 
+    private int notifID = 0;
+    private int notifID_intent = 0;
     private int notifCount = 0;   //已存在通知计数
     private int egg = 0;
     private int mHour,mMinute;
+    private boolean isPushed = false;  //断言是否已通知，可用于标记当前Activity状态
     private String title_text;
     private String content_text;
 
     private SharedPreferences.Editor save_editor;   //SharedPreferences保存
     private SharedPreferences recover_pre;  //SharedPreferences恢复
+
+    private DatabaseHelper dbHelper;  //数据库
+    private SQLiteDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,38 +71,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViews();
         setOnClickListeners();
         onNewIntent(getIntent());
+        dbCreate();
 
         //恢复notifCount计数
         recover_pre = getSharedPreferences("data", MODE_PRIVATE);
         notifCount = recover_pre.getInt("notifCount", 0);
+        notifID = recover_pre.getInt("notifID", 0);
     }
 
 
-
-    //监听Activity内外单击事件
+    //从通知点击进来
+    //注意onNewIntent参数为传来的Intent
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            //如果点击位置在当前View外部则销毁当前视图
-            if (!(event.getX() >= -10 && event.getY() >= -10)
-                    || event.getX() >= mainLayout.getWidth() + 10  //微调
-                    || event.getY() >= mainLayout.getHeight() + 20) {
-                //对话框存在内容
-                if (title_auto.length() != 0 || content_auto.length() != 0) {
-                    contentExistDialog();
-                } else {
-                    finish();
-                }
-            }
-        }
-        return true;
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        title_auto.setText(intent.getStringExtra("title_text"));
+        content_auto.setText(intent.getStringExtra("content_text"));
+        notifID_intent = intent.getIntExtra("notifID_intent", 0);
+        isPushed = intent.getBooleanExtra("isPushed", false);
+
+        title_text = intent.getStringExtra("title_text");
+        content_text = intent.getStringExtra("content_text");
     }
 
 
     //返回按键响应
     @Override
     public void onBackPressed() {
-        //super.onBackPressed();这句话一定要注掉,不然又去调用默认的back处理方式
+        //super.onBackPressed();   //super调用默认的back处理方式（销毁Activity）
         if (title_auto.length() != 0 || content_auto.length() != 0) {
             contentExistDialog();
         } else {
@@ -98,15 +106,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
-
-    //注意onNewIntent参数为传来的Intent
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        title_auto.setText(intent.getStringExtra("title_text"));
-        content_auto.setText(intent.getStringExtra("content_text"));
-    }
 
     private void findViews() {
         title_auto = (AutoCompleteTextView) findViewById(R.id.title_auto);
@@ -128,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()) {
             //闹钟按钮响应事件
             case R.id.alarm_iv:
-                Calendar calendar = Calendar.getInstance();
+               /* Calendar calendar = Calendar.getInstance();
                 new TimePickerDialog(this,
                         // 绑定TimePickerDialog的监听器
                         new TimePickerDialog.OnTimeSetListener() {
@@ -143,19 +142,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         , calendar.get(Calendar.HOUR_OF_DAY)
                         , calendar.get(Calendar.MINUTE)
                         // true表示采用24小时制
-                        , true).show();
+                        , true).show();*/
+               dbSelect(1);
                 break;
 
             //撤销按钮响应事件
             case R.id.revoke_tv:
                 revokeNotifiction();
+                dbDelete(notifID);
+                notifCount--;
                 break;
 
             //推送按钮响应事件
             case R.id.push_tv:
                 if (getText()) {   //EditText内有内容
-                    createNotification();
-                    finish();
+                    if (isPushed == true) {
+                        //如果已经推送，则为修改，使用通知原ID进行推送
+                        notifID = notifID_intent;
+                        pushNotification();
+                        finish();
+                    } else {  //如果未推送，则创建新的通知
+                        notifCount++;
+                        notifID++;
+                        pushNotification();
+                        finish();
+                    }
                 } else {
                     noContent();
                 }
@@ -166,14 +177,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     //创建通知
-    public void createNotification() {
-        notifCount++;
+    public void pushNotification() {
+        isPushed = true;  //已推送
 
         Intent intent = new Intent(this, MainActivity.class);  //单击消息意图
+        intent.putExtra("notifID_intent", notifID);
         intent.putExtra("title_text", title_text);
         intent.putExtra("content_text", content_text);
+        intent.putExtra("isPushed", isPushed);
         //注意PendingIntent.getActivity的第二个参数，自行查阅文档
-        PendingIntent pi = PendingIntent.getActivity(this, notifCount, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pi = PendingIntent.getActivity(this, notifID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         Notification notification = new NotificationCompat.Builder(this)
@@ -184,18 +197,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
                 .setContentIntent(pi)
                 .build();
-        manager.notify(notifCount, notification);
+        manager.notify(notifID, notification);
 
         //SharedPreferences形式持久化保存notifCount计数，防止Activity销毁后重新计数
         save_editor = getSharedPreferences("data", MODE_PRIVATE).edit();
         save_editor.putInt("notifCount", notifCount);
+        save_editor.putInt("notifID", notifID);
         save_editor.apply();
+
+        dbInsert();
     }
 
     //撤回通知
     public void revokeNotifiction() {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.cancel(1);
+        manager.cancel(notifID);
     }
 
     //断言EditText为空并取值
@@ -211,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    //警告对话框封装
+    //存在内容未推送对话框
     public void contentExistDialog() {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle(R.string.title_dialog);
@@ -230,6 +246,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+        dialog.show();
+    }
+
+    //修改通知后未推送对话框
+    public void modifDialog() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(R.string.title_dialog);
+        dialog.setMessage(R.string.messageNotPushed_dialog);
+        dialog.setCancelable(false);
+        dialog.setPositiveButton(R.string.positive_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        dialog.setNegativeButton(R.string.negative_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
         dialog.show();
     }
 
@@ -255,7 +292,75 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    //监听Activity内外单击事件
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            //如果点击位置在当前View外部则销毁当前视图
+            if (!(event.getX() >= -10 && event.getY() >= -10)
+                    || event.getX() >= mainLayout.getWidth() + 10  //微调
+                    || event.getY() >= mainLayout.getHeight() + 20) {
+                //对话框存在内容
+                if (title_auto.length() != 0 || content_auto.length() != 0) {
+                    if (isPushed) {  //当前Activity处于修改状态（通知进来）
+                        if (title_auto.getText().toString().equals(title_text)
+                                && content_auto.getText().toString().equals(content_text)) {  //检测用户是否修改
+                            finish();
+                        } else {
+                            modifDialog();
+                        }
 
+                    } else {  //当前Activity处于初次编辑状态（启动器进来）
+                        contentExistDialog();
+                    }
+
+                } else {
+                    finish();
+                }
+            }
+        }
+        return true;
+    }
+
+
+    //数据库创建
+    public void dbCreate() {
+        dbHelper = new DatabaseHelper(this, "Notification.db", null, 1);
+        dbHelper.getWritableDatabase();
+        db = dbHelper.getWritableDatabase();
+    }
+
+    //数据库插入
+    public void dbInsert() {
+        ContentValues values = new ContentValues();
+        values.put("id", notifID);
+        values.put("title", title_text);
+        values.put("content", content_text);
+        db.insert("Notification", null, values);
+        Log.i(this.getClass().getName(), "insert success");
+    }
+
+    //数据库删除
+    public void dbDelete(int notifID) {
+        db.delete("Notification", "id = ?", new String[] { Integer.toString(notifID) });
+        Log.i(this.getClass().getName(), "delete success");
+    }
+
+    //数据库读取
+    public void dbSelect(int notifID) {
+        Cursor cursor = db.query("Notification", null, null, null, null, null, null);
+        if (cursor.moveToFirst()) {
+            do {
+                cursor.getInt(cursor.getColumnIndex("id"));
+                cursor.getString(cursor.getColumnIndex("title"));
+                cursor.getString(cursor.getColumnIndex("content"));
+                Toast.makeText(this, cursor.getString(cursor.getColumnIndex("id")), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, cursor.getString(cursor.getColumnIndex("title")), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, cursor.getString(cursor.getColumnIndex("content")), Toast.LENGTH_SHORT).show();
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+    }
 
 
     //彩蛋

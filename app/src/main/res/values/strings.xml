@@ -13,7 +13,8 @@
 
     //Dialog
     <string name="title_dialog">注意</string>
-    <string name="message_dialog">检测到输入框存在文本，确认放弃吗？</string>
+    <string name="message_dialog">检测到输入框存在已编辑但未推送文本，确认放弃吗？</string>
+    <string name="messageNotPushed_dialog">检测到输入框存在已修改但未推送文本，确认放弃吗？</string>
     <string name="positive_dialog">确认</string>
     <string name="negative_dialog">取消</string>
 
