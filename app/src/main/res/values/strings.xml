@@ -17,12 +17,15 @@
     <string name="title_dialog">注意</string>
     <string name="message_dialog">检测到输入框存在已编辑但未推送文本，确认放弃吗？</string>
     <string name="messageNotPushed_dialog">检测到输入框存在已修改但未推送文本，确认放弃吗？</string>
-    <string name="message_isRecover_dialog">检测到程序异常终止, 是否放弃已推送通知？</string>
+    <string name="message_isRecover_dialog">检测到程序异常终止, 是否恢复已推送通知？</string>
     <string name="messageBefore_dialog">原文本</string>
     <string name="messageAfter_dialog">修改为</string>
     <string name="messageInput_dialog">已输入</string>
     <string name="positive_dialog">放弃</string>
     <string name="negative_dialog">取消</string>
+    <string name="recover_dialog">恢复所有</string>
+    <string name="push_dialog">推送</string>
+    <string name="needToRecover_dialog">待恢复通知列表</string>
     <string name="neutral_dialog">选择恢复</string>
 
 
@@ -44,6 +47,7 @@
 
 
 
+    <string name="revokeAllNotification">所有通知已撤销</string>
 
 
 

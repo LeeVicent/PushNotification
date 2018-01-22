@@ -1,6 +1,7 @@
 package com.vicent.pushnotification.ui.activity;
 
 
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -28,10 +29,7 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AutoCompleteTextView;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import android.widget.*;
 import android.widget.TimePicker;
 import android.view.animation.*;
 import android.view.animation.Animation;
@@ -40,11 +38,9 @@ import android.graphics.drawable.Drawable;
 import android.widget.Toast;
 import com.vicent.pushnotification.unti.DatabaseHelper;
 
-
 import com.vicent.pushnotification.R;
 
-import java.util.ArrayList;
-import java.util.Calendar;
+
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -61,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int egg = 0, revoke_egg = 0;
     private int mHour,mMinute;
     private boolean isPushed = false;  //断言是否已通知，可用于标记当前Activity状态
+    private boolean isAbnormalStoped = true;   //断言程序是否异常终止（thread而不是Activity）
     private String title_text;
     private String content_text;
 
@@ -70,6 +67,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DatabaseHelper dbHelper;  //数据库
     private SQLiteDatabase db;
 
+    //恢复Dialog用
+    private boolean[] bools;
+    private String[] items;
+    private int[] idArr;   //保存数据库所有id
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,11 +80,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setOnClickListeners();
         onNewIntent(getIntent());
         dbCreate();
+        save_editor = getSharedPreferences("data", MODE_PRIVATE).edit();
 
         //恢复notifCount计数
         recover_pre = getSharedPreferences("data", MODE_PRIVATE);
         notifCount = recover_pre.getInt("notifCount", 0);
         notifID = recover_pre.getInt("notifID", 0);
+        isAbnormalStoped = recover_pre.getBoolean("isAbnormalStoped", false);
+        idArr = new int[notifCount];
+        dbSelect();
+
+        if (isAbnormalStoped) {   //如果为false，则表明上次正常退出
+            //此处为异常处理代码
+            isRecoverDialog();
+        } else {
+           //此处为正常处理代码
+            save_editor.putBoolean("isAbnormalStoped", true);   //如果程序退出之前都没有置为false，则发生异常
+            save_editor.apply();
+        }
     }
 
 
@@ -101,6 +116,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        save_editor.putBoolean("isAbnormalStoped", false);
+        save_editor.apply();
+        Log.i(this.getClass().getName(), "正常终止MainActivity");
+    }
 
     //返回按键响应
     @Override
@@ -169,20 +192,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         , true).show();*/
 
                 /*dbSelect(1);*/
-                recoverDialog();
+                /*recoverDialog();*/
+                revokeAllNotification();
                 break;
 
             //撤销按钮响应事件
             case R.id.revoke_tv:
                 if (isPushed) {
                     notifCount--;
-                    if (0 == notifCount) {   //没有通知的话notifID也置为0
+                    if (notifCount == 0) {   //没有通知的话notifID也置为0
                         notifID = 0;
                     }
                     revokeNotifiction();
                     dbDelete(notifID_intent);
+                    finish();
                 }
-
                 break;
 
             //推送按钮响应事件
@@ -192,12 +216,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         notifID = notifID_intent;
                         dbDelete(notifID);
                         dbInsert();
-                        pushNotification();
+                        pushNotification(notifID, title_text, content_text);
                         finish();
                     } else {  //如果未推送，则创建新的通知
                         notifCount++;
                         notifID++;
-                        pushNotification();
+                        pushNotification(notifID, title_text, content_text);
                         dbInsert();
                         finish();
                     }
@@ -214,8 +238,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // TODO 通知优先级还没调整
 
-    //创建通知
-    public void pushNotification() {
+    //创建通知(根据id）   至于为什么是final，因为后面恢复是注册在匿名内部类的
+    public void pushNotification(int notifID, String title_text, String content_text) {
         isPushed = true;  //已推送
 
         Intent intent = new Intent(this, MainActivity.class);  //单击消息意图
@@ -240,7 +264,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         manager.notify(notifID,notifications);
 
         //SharedPreferences形式持久化保存notifCount计数，防止Activity销毁后重新计数
-        save_editor = getSharedPreferences("data", MODE_PRIVATE).edit();
         save_editor.putInt("notifCount", notifCount);
         save_editor.putInt("notifID", notifID);
         save_editor.apply();
@@ -261,8 +284,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //撤回所有通知
     public void revokeAllNotification() {
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        for (int i = 0; i <= notifID; ++i){
+            manager.cancel(i);
+        }
 
+        //全部置零
+        notifID = 0;   //至于为什么不是下面直接写0，因为置零后Activity没有销毁，此时再次发送notifID没变
+        notifCount = 0;
+        save_editor.putInt("notifCount", notifCount);
+        save_editor.putInt("notifID", notifID);
+        save_editor.apply();
 
+        //清空数据库表Notification
+        db.delete("Notification", "id < ?", new String[] { "100" });   //还有人能用100条通知？
+        Toast.makeText(this, getString(R.string.revokeAllNotification), Toast.LENGTH_SHORT).show();
     }
 
     //断言EditText为空并取值
@@ -277,9 +313,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return false;
         }
     }
-
-
-
 
 
     //用户未输入响应
@@ -357,20 +390,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.i(this.getClass().getName(), "delete success");
     }
 
-    //数据库读取
-    public void dbSelect(int notifID) {
+    //数据库读取(填写id数组)
+    public void dbSelect() {
+        int count = 0;
         Cursor cursor = db.query("Notification", null, null, null, null, null, null);
         if (cursor.moveToFirst()) {
             do {
-                cursor.getInt(cursor.getColumnIndex("id"));
-                cursor.getString(cursor.getColumnIndex("title"));
-                cursor.getString(cursor.getColumnIndex("content"));
-                Toast.makeText(this, cursor.getString(cursor.getColumnIndex("id")), Toast.LENGTH_SHORT).show();
-                Toast.makeText(this, cursor.getString(cursor.getColumnIndex("title")), Toast.LENGTH_SHORT).show();
-                Toast.makeText(this, cursor.getString(cursor.getColumnIndex("content")), Toast.LENGTH_SHORT).show();
+                idArr[count] = cursor.getInt(cursor.getColumnIndex("id"));
+                count++;
             } while (cursor.moveToNext());
         }
         cursor.close();
+    }
+
+    //数据库读取(根据id返回标题)
+    public String dbSelectGetTitle(int notifID) {
+        String r = "";
+        Cursor cursor = db.query("Notification", null, null, null, null, null, null);
+        if (cursor.moveToFirst()) {
+            do {
+                if (notifID == cursor.getInt(cursor.getColumnIndex("id"))) {
+                    r = cursor.getString(cursor.getColumnIndex("title"));
+                }
+            } while (cursor.moveToNext());
+        }
+        cursor.close();   //记得关闭cursor，防止被占用，不要直接返回
+        return r;
+    }
+
+    //数据库读取(根据id返回内容)
+    public String dbSelectGetContent(int notifID) {
+        String r = "";
+        Cursor cursor = db.query("Notification", null, null, null, null, null, null);
+        if (cursor.moveToFirst()) {
+            do {
+                if (notifID == cursor.getInt(cursor.getColumnIndex("id"))) {
+                    r = cursor.getString(cursor.getColumnIndex("content"));
+                }
+            } while (cursor.moveToNext());
+        }
+        cursor.close();   //记得关闭cursor，防止被占用，不要直接返回
+        return r;
     }
 
 
@@ -453,9 +513,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.show();
     }
 
-    private boolean[] bools = {false,false,false,false,false};
-    String[] item = {"游戏","运动","电影","旅游","看书"};
-
     //是否恢复对话框
     public void isRecoverDialog() {
 
@@ -463,44 +520,75 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.setTitle(R.string.title_dialog);
         dialog.setMessage(R.string.message_isRecover_dialog);
         dialog.setCancelable(false);
-        dialog.setPositiveButton(R.string.positive_dialog, new DialogInterface.OnClickListener() {
+        dialog.setPositiveButton(R.string.recover_dialog, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
+            public void onClick(DialogInterface dialogInterface, int which) {
+                for (int i = 0; i < notifCount; ++i) {
+                    pushNotification(idArr[i], dbSelectGetTitle(idArr[i]), dbSelectGetContent(idArr[i]));
+                }
                 finish();
             }
         });
         dialog.setNeutralButton(R.string.neutral_dialog, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
+                recoverDialog();
             }
         });
-        dialog.setNegativeButton(R.string.negative_dialog, null);
+        dialog.setNegativeButton(R.string.negative_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                revokeAllNotification();
+            }
+        });
         dialog.show();
     }
 
     //选择恢复对话框
     public void recoverDialog() {
 
+        bools = new boolean[notifCount];
+        items = new String[notifCount];
+
+        for (int i = 0; i < notifCount; ++i) {
+            bools[i] = false;
+            items[i] = getString(R.string.title) + ": " + dbSelectGetTitle(idArr[i]) + "\n"
+                         + getString(R.string.content) + ": " + dbSelectGetContent(idArr[i]) + "\n";
+        }
+
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle(R.string.title_dialog);
-        dialog.setMultiChoiceItems(item, bools,new DialogInterface.OnMultiChoiceClickListener() {
+        dialog.setTitle(R.string.needToRecover_dialog);
+        dialog.setMultiChoiceItems(items, bools,new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                bools[which] = isChecked;
+                bools[which] = isChecked;   //标记选中
             }
         });
-
         dialog.setCancelable(false);
-        dialog.setPositiveButton(R.string.positive_dialog, new DialogInterface.OnClickListener() {
+        dialog.setPositiveButton(R.string.push_dialog, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                finish();
+            public void onClick(DialogInterface dialogInterface, int which) {
+                for (int i = 0; i < items.length; i++) {
+                    if (bools[i]) {
+                        //逻辑
+                        pushNotification(idArr[i], dbSelectGetTitle(idArr[i]), dbSelectGetContent(idArr[i]));
+                    } else {
+                        notifCount--;   //未推送，减去
+                        dbDelete(idArr[i]);  //并从数据库删除
+                    }
+                }
+                if (notifCount == 0) {   //全部都没选的话
+                    notifID = 0;
+                }
+
+                save_editor.putInt("notifCount", notifCount);
+                save_editor.apply();
             }
         });
         dialog.setNegativeButton(R.string.negative_dialog, null);
         dialog.show();
     }
+
 
     public void egg() {
         switch (egg) {
