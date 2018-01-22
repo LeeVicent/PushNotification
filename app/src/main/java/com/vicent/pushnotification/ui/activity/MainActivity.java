@@ -3,6 +3,7 @@ package com.vicent.pushnotification.ui.activity;
 
 import android.app.AlertDialog;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
@@ -18,6 +19,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -56,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int notifID = 0;
     private int notifID_intent = 0;
     private int notifCount = 0;   //已存在通知计数
-    private int egg = 0;
+    private int egg = 0, revoke_egg = 0;
     private int mHour,mMinute;
     private boolean isPushed = false;  //断言是否已通知，可用于标记当前Activity状态
     private String title_text;
@@ -96,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         title_text = intent.getStringExtra("title_text");
         content_text = intent.getStringExtra("content_text");
+
     }
 
 
@@ -129,6 +132,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         revoke_tv = (TextView) findViewById(R.id.revoke_tv);
         push_tv = (TextView) findViewById(R.id.push_tv);
         mainLayout = (RelativeLayout)findViewById(R.id.mainLayout);
+
+        //以下代码提供换行
+        title_auto.setSingleLine(false);
+        title_auto.setHorizontalScrollBarEnabled(false);
+        content_auto.setSingleLine(false);
+        content_auto.setHorizontalScrollBarEnabled(false);
     }
 
     private void setOnClickListeners() {
@@ -158,28 +167,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         , calendar.get(Calendar.MINUTE)
                         // true表示采用24小时制
                         , true).show();*/
-                modifDialog();
+
+                /*dbSelect(1);*/
+                recoverDialog();
                 break;
 
             //撤销按钮响应事件
             case R.id.revoke_tv:
-                revokeNotifiction();
-                dbDelete(notifID);
-                notifCount--;
+                if (isPushed) {
+                    notifCount--;
+                    if (0 == notifCount) {   //没有通知的话notifID也置为0
+                        notifID = 0;
+                    }
+                    revokeNotifiction();
+                    dbDelete(notifID_intent);
+                }
+
                 break;
 
             //推送按钮响应事件
             case R.id.push_tv:
                 if (getText()) {   //EditText内有内容
-                    if (isPushed == true) {
-                        //如果已经推送，则为修改，使用通知原ID进行推送
+                    if (isPushed) {  //如果已经推送，则为修改，使用通知原ID进行推送
                         notifID = notifID_intent;
+                        dbDelete(notifID);
+                        dbInsert();
                         pushNotification();
                         finish();
                     } else {  //如果未推送，则创建新的通知
                         notifCount++;
                         notifID++;
                         pushNotification();
+                        dbInsert();
                         finish();
                     }
                 } else {
@@ -190,6 +209,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
+    // TODO 通知里的长文本可能需要展开，默认是不支持的
+
+    // TODO 通知优先级还没调整
 
     //创建通知
     public void pushNotification() {
@@ -203,30 +226,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //注意PendingIntent.getActivity的第二个参数，自行查阅文档
         PendingIntent pi = PendingIntent.getActivity(this, notifID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        Notification notification = new NotificationCompat.Builder(this)
+        //使用兼容版本Notification 以兼容Android 8.0
+        NotificationManagerCompat manager = NotificationManagerCompat.from(this);
+        NotificationCompat.Builder notificationBulider = new NotificationCompat.Builder(this, null)
                 .setContentTitle(title_text)
                 .setContentText(content_text)
-                .setWhen(System.currentTimeMillis())
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
+                .setSmallIcon(R.drawable.ic_alarm)
                 .setContentIntent(pi)
-                .build();
-        manager.notify(notifID, notification);
+                .setOngoing(true)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(content_text))
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+        Notification notifications = notificationBulider.build();   //这里有待验证
+        manager.notify(notifID,notifications);
 
         //SharedPreferences形式持久化保存notifCount计数，防止Activity销毁后重新计数
         save_editor = getSharedPreferences("data", MODE_PRIVATE).edit();
         save_editor.putInt("notifCount", notifCount);
         save_editor.putInt("notifID", notifID);
         save_editor.apply();
-
-        dbInsert();
     }
 
     //撤回通知
     public void revokeNotifiction() {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.cancel(notifID);
+        manager.cancel(notifID_intent);
+
+        save_editor = getSharedPreferences("data", MODE_PRIVATE).edit();
+        save_editor.putInt("notifCount", notifCount);
+        save_editor.putInt("notifID", notifID);
+        save_editor.apply();
+
+    }
+
+
+    //撤回所有通知
+    public void revokeAllNotification() {
+
+
     }
 
     //断言EditText为空并取值
@@ -243,98 +279,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    //存在内容未推送对话框
-    public void contentExistDialog() {
-        String all = "";  //合并文本
-        String message = getResources().getString(R.string.message_dialog) + "\n\n"  //26
-                + getResources().getString(R.string.messageInput_dialog) + "\n";  //30
-        String before = getResources().getString(R.string.title) + ": " + title_auto.getText().toString() + "\n"
-                + getResources().getString(R.string.content) + ": " + content_auto.getText().toString() + "\n\n";
-        all = message + before;
 
-        //修改颜色
-        SpannableStringBuilder sp = new SpannableStringBuilder(all);
-        sp.setSpan(new ForegroundColorSpan(Color.RED), 8, 11, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        sp.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.teal)), 26, 30, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);  //修改“已输入”颜色
-
-        if ( title_auto.length() != 0) {   //如果标题存在，则变色
-            sp.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.posColor)), 34, title_auto.getText().toString().length() + 34, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
-        if ( content_auto.length() != 0) {  //如果内容存在，则变色
-            sp.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.posColor)), content_auto.getText().toString().length() + 39, content_auto.getText().toString().length() + title_auto.getText().toString().length() + 39, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        }
-
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle(R.string.title_dialog);
-        dialog.setMessage(sp);
-        dialog.setCancelable(false);
-        dialog.setPositiveButton(R.string.positive_dialog, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                finish();
-            }
-        });
-        dialog.setNegativeButton(R.string.negative_dialog, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-
-            }
-        });
-
-        dialog.show();
-    }
-
-
-    //修改通知后未推送对话框
-    public void modifDialog() {
-        String all = "";  //合并文本
-        String message = getResources().getString(R.string.messageNotPushed_dialog) + "\n\n"  //26
-                + getResources().getString(R.string.messageBefore_dialog) + "\n";  //30
-        String before = getResources().getString(R.string.title) + ": " + title_text + "\n"
-                + getResources().getString(R.string.content) + ": " + content_text + "\n\n"
-                + getResources().getString(R.string.messageAfter_dialog) + "\n";
-        message = message + before;
-        String after = getResources().getString(R.string.title) + ": " + title_auto.getText().toString() + "\n"
-                + getResources().getString(R.string.content) + ": " + content_auto.getText().toString();
-
-        all = message + after;
-        //修改颜色
-        SpannableStringBuilder sp = new SpannableStringBuilder(all);
-        sp.setSpan(new ForegroundColorSpan(Color.RED), 8, 11, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        sp.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.teal)), 26, 30, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);  //修改“原文本”颜色
-        sp.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.teal)), content_text.length() + title_text.length() + 40,  //修改“修改为”颜色
-                content_text.length() + title_text.length() + 44, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        if ( !title_auto.getText().toString().equals(title_text)) {   //如果标题被修改，则变色
-            sp.setSpan(new ForegroundColorSpan(Color.RED), 34, title_text.length() + 34, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            sp.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.posColor)), message.length() + 4, message.length() + title_auto.getText().toString().length() + 5, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
-        if ( !content_auto.getText().toString().equals(content_text)) {  //如果内容被修改，则变色
-            sp.setSpan(new ForegroundColorSpan(Color.RED), title_text.length() + 39, content_text.length() + title_text.length() + 39, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            sp.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.posColor)), message.length() + title_auto.getText().toString().length() + 9,
-                    message.length() + title_auto.getText().toString().length() + content_auto.getText().toString().length() +9, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        }
-
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle(R.string.title_dialog);
-        dialog.setMessage(sp);
-        dialog.setCancelable(false);
-        dialog.setPositiveButton(R.string.positive_dialog, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                finish();
-            }
-        });
-        dialog.setNegativeButton(R.string.negative_dialog, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-
-            }
-        });
-        dialog.show();
-    }
 
 
     //用户未输入响应
@@ -429,19 +374,146 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    //彩蛋
+    //存在内容未推送对话框
+    public void contentExistDialog() {
+        SpannableStringBuilder message_dialog = new SpannableStringBuilder(getString(R.string.message_dialog) + "\n\n");
+        SpannableStringBuilder messageInput_dialog = new SpannableStringBuilder(getString(R.string.messageInput_dialog) + "\n");
+        SpannableStringBuilder title = new SpannableStringBuilder(getString(R.string.title) + ": ");
+        SpannableStringBuilder content = new SpannableStringBuilder(getString(R.string.content) + ": ");
+        SpannableStringBuilder titie_input = new SpannableStringBuilder(title_auto.getText().toString() + "\n");
+        SpannableStringBuilder content_input = new SpannableStringBuilder(content_auto.getText().toString());
+
+        messageInput_dialog.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.teal)), 0, getString(R.string.messageInput_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        if ( title_auto.length() != 0) {   //如果标题存在，则变色
+            titie_input.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.posColor)), 0, title_auto.getText().toString().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        if ( content_auto.length() != 0) {  //如果内容存在，则变色
+            content_input.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.posColor)), 0, content_auto.getText().toString().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        }
+
+        message_dialog.append(messageInput_dialog); message_dialog.append(title); message_dialog.append(titie_input);
+        message_dialog.append(content); message_dialog.append(content_input);
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(R.string.title_dialog);
+        dialog.setMessage(message_dialog);
+        dialog.setCancelable(false);
+        dialog.setPositiveButton(R.string.positive_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        dialog.setNegativeButton(R.string.negative_dialog, null);
+
+        dialog.show();
+    }
+
+
+    //修改通知后未推送对话框
+    public void modifDialog() {
+        SpannableStringBuilder messageNotPushed_dialog = new SpannableStringBuilder(getString(R.string.messageNotPushed_dialog) + "\n\n");
+        SpannableStringBuilder messageBefore_dialog = new SpannableStringBuilder(getString(R.string.messageBefore_dialog) + "\n");
+        SpannableStringBuilder messageAfter_dialog = new SpannableStringBuilder(getString(R.string.messageAfter_dialog) + "\n");
+        SpannableStringBuilder title = new SpannableStringBuilder(getString(R.string.title) + ": ");
+        SpannableStringBuilder content = new SpannableStringBuilder(getString(R.string.content) + ": ");
+        SpannableStringBuilder title_original = new SpannableStringBuilder(title_text + "\n");
+        SpannableStringBuilder content_original = new SpannableStringBuilder(content_text + "\n\n");
+        SpannableStringBuilder title_input = new SpannableStringBuilder(title_auto.getText().toString() + "\n");
+        SpannableStringBuilder content_input = new SpannableStringBuilder(content_auto.getText().toString());
+
+        messageBefore_dialog.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.teal)), 0, getString(R.string.messageBefore_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        messageAfter_dialog.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.teal)), 0, getString(R.string.messageAfter_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        if ( !title_auto.getText().toString().equals(title_text)) {   //如果标题被修改，则变色
+            title_original.setSpan(new ForegroundColorSpan(Color.RED), 0, title_text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            title_input.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.posColor)), 0, title_auto.getText().toString().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        if ( !content_auto.getText().toString().equals(content_text)) {  //如果内容被修改，则变色
+            content_original.setSpan(new ForegroundColorSpan(Color.RED), 0, content_text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            content_input.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.posColor)), 0, content_auto.getText().toString().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
+        messageNotPushed_dialog.append(messageBefore_dialog); messageNotPushed_dialog.append(title); messageNotPushed_dialog.append(title_original);
+        messageNotPushed_dialog.append(content); messageNotPushed_dialog.append(content_original); messageNotPushed_dialog.append(messageAfter_dialog);
+        messageNotPushed_dialog.append(title); messageNotPushed_dialog.append(title_input);
+        messageNotPushed_dialog.append(content); messageNotPushed_dialog.append(content_input);
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(R.string.title_dialog);
+        dialog.setMessage(messageNotPushed_dialog);
+        dialog.setCancelable(false);
+        dialog.setPositiveButton(R.string.positive_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        dialog.setNegativeButton(R.string.negative_dialog, null);
+        dialog.show();
+    }
+
+    private boolean[] bools = {false,false,false,false,false};
+    String[] item = {"游戏","运动","电影","旅游","看书"};
+
+    //是否恢复对话框
+    public void isRecoverDialog() {
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(R.string.title_dialog);
+        dialog.setMessage(R.string.message_isRecover_dialog);
+        dialog.setCancelable(false);
+        dialog.setPositiveButton(R.string.positive_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        dialog.setNeutralButton(R.string.neutral_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        dialog.setNegativeButton(R.string.negative_dialog, null);
+        dialog.show();
+    }
+
+    //选择恢复对话框
+    public void recoverDialog() {
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(R.string.title_dialog);
+        dialog.setMultiChoiceItems(item, bools,new DialogInterface.OnMultiChoiceClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                bools[which] = isChecked;
+            }
+        });
+
+        dialog.setCancelable(false);
+        dialog.setPositiveButton(R.string.positive_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        dialog.setNegativeButton(R.string.negative_dialog, null);
+        dialog.show();
+    }
+
     public void egg() {
         switch (egg) {
-            case 3:
+            case 2:
                 Toast.makeText(this, R.string.first_toast, Toast.LENGTH_SHORT).show();
                 break;
-            case 8:
+            case 6:
                 Toast.makeText(this, R.string.second_toast, Toast.LENGTH_SHORT).show();
                 break;
-            case 12:
+            case 10:
                 Toast.makeText(this, R.string.third_toast, Toast.LENGTH_SHORT).show();
                 break;
-            case 18:
+            case 16:
                 Toast.makeText(this, R.string.fourth_toast, Toast.LENGTH_LONG).show();
                 finish();
         }

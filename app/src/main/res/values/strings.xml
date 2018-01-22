@@ -17,18 +17,27 @@
     <string name="title_dialog">注意</string>
     <string name="message_dialog">检测到输入框存在已编辑但未推送文本，确认放弃吗？</string>
     <string name="messageNotPushed_dialog">检测到输入框存在已修改但未推送文本，确认放弃吗？</string>
+    <string name="message_isRecover_dialog">检测到程序异常终止, 是否放弃已推送通知？</string>
     <string name="messageBefore_dialog">原文本</string>
     <string name="messageAfter_dialog">修改为</string>
     <string name="messageInput_dialog">已输入</string>
-    <string name="positive_dialog">确认</string>
+    <string name="positive_dialog">放弃</string>
     <string name="negative_dialog">取消</string>
+    <string name="neutral_dialog">选择恢复</string>
+
 
 
     //egg
     <string name="first_toast">别瞎球点啦！(*/ω＼*)</string>
     <string name="second_toast">再点我退出了啊！(▼ヘ▼#)</string>
     <string name="third_toast">我真的要退出了啊！ヽ(#`Д´)ﾉ</string>
-    <string name="fourth_toast">你居然不信(╯｀□′)╯~ ╧╧</string>
+    <string name="fourth_toast">你居然不信！！(╯｀□′)╯~ ╧╧</string>
+
+    //revoke_egg
+    <string name="revoke_egg1">别瞎球撤回啦，还没推送呢！(ﾉﾟ∀ﾟ)ﾉ </string>
+    <string name="revoke_egg2">要啥自行车啊！</string>
+    <string name="revoke_egg3">送你一顶原谅帽，带好了啊</string>
+    <string name="revoke_never_egg"></string>
 
     //setError
     <string name="error_et">还是写点什么吧</string>
