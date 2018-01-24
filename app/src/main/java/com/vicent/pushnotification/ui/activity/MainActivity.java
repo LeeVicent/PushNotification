@@ -40,7 +40,7 @@ import com.vicent.pushnotification.unti.DatabaseHelper;
 
 import com.vicent.pushnotification.R;
 
-
+import java.util.Calendar;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DatabaseHelper dbHelper;  //数据库
     private SQLiteDatabase db;
 
-    //恢复Dialog用
+    //恢复Dialog使用
     private boolean[] bools;
     private String[] items;
     private int[] idArr;   //保存数据库所有id
@@ -169,30 +169,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         push_tv.setOnClickListener(this);
     }
 
+
+    public void moreVertOnClick(View view) {
+        Toast.makeText(this, "测试", Toast.LENGTH_SHORT).show();
+    }
+
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             //闹钟按钮响应事件
             case R.id.alarm_iv:
-               /* Calendar calendar = Calendar.getInstance();
-                new TimePickerDialog(this,
-                        // 绑定TimePickerDialog的监听器
-                        new TimePickerDialog.OnTimeSetListener() {
-                            @Override
-                            public void onTimeSet(TimePicker view,
-                                                  int hourOfDay, int minute) {
-                                title_auto.setText("您选择了：" + hourOfDay + "时" + minute
-                                        + "分");
-                            }
-                        }
-                        // 设置初始时间
-                        , calendar.get(Calendar.HOUR_OF_DAY)
-                        , calendar.get(Calendar.MINUTE)
-                        // true表示采用24小时制
-                        , true).show();*/
 
-                /*dbSelect(1);*/
-                /*recoverDialog();*/
                 revokeAllNotification();
                 break;
 
@@ -236,9 +223,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // TODO 通知里的长文本可能需要展开，默认是不支持的
 
-    // TODO 通知优先级还没调整
-
-    //创建通知(根据id）   至于为什么是final，因为后面恢复是注册在匿名内部类的
+    //创建通知(根据id）
     public void pushNotification(int notifID, String title_text, String content_text) {
         isPushed = true;  //已推送
 
@@ -341,9 +326,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             //如果点击位置在当前View外部则销毁当前视图
-            if (!(event.getX() >= -10 && event.getY() >= -10)
-                    || event.getX() >= mainLayout.getWidth() + 10  //微调
-                    || event.getY() >= mainLayout.getHeight() + 20) {
+            if (!(event.getX() >= 0 && event.getY() >= 0)
+                    || event.getX() >= mainLayout.getWidth() + 50 //微调
+                    || event.getY() >= mainLayout.getHeight()) {
                 //对话框存在内容
                 if (title_auto.length() != 0 || content_auto.length() != 0) {
                     if (isPushed) {  //当前Activity处于修改状态（通知进来）
@@ -588,6 +573,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.setNegativeButton(R.string.negative_dialog, null);
         dialog.show();
     }
+
+
+    //时间选择对话框封装
+
+    public void timePicker() {
+        Calendar calendar = Calendar.getInstance();
+        new TimePickerDialog(this,
+                // 绑定TimePickerDialog的监听器
+                new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view,
+                                          int hourOfDay, int minute) {
+                        title_auto.setText("您选择了：" + hourOfDay + "时" + minute + "分");
+                    }
+                }
+                // 设置初始时间
+                , calendar.get(Calendar.HOUR_OF_DAY)
+                , calendar.get(Calendar.MINUTE)
+                // true表示采用24小时制
+                , true).show();
+    }
+
+
 
 
     public void egg() {
