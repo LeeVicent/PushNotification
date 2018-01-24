@@ -1,6 +1,7 @@
 package com.vicent.pushnotification.ui.activity;
 
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Notification;
@@ -14,11 +15,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -27,23 +29,28 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.*;
-import android.widget.TimePicker;
 import android.view.animation.*;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.graphics.drawable.Drawable;
 import android.widget.Toast;
+
+import com.vicent.pushnotification.backstage.MainService;
 import com.vicent.pushnotification.unti.DatabaseHelper;
 
 import com.vicent.pushnotification.R;
 
 import java.util.Calendar;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private RelativeLayout mainLayout;
     private AutoCompleteTextView title_auto;
     private AutoCompleteTextView content_auto;
@@ -57,12 +64,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int egg = 0, revoke_egg = 0;
     private int mHour,mMinute;
     private boolean isPushed = false;  //断言是否已通知，可用于标记当前Activity状态
-    private boolean isAbnormalStoped = true;   //断言程序是否异常终止（thread而不是Activity）
     private String title_text;
     private String content_text;
+    public static final int WAIT_SERVICE_START = 1;
 
-    private SharedPreferences.Editor save_editor;   //SharedPreferences保存
-    private SharedPreferences recover_pre;  //SharedPreferences恢复
+    public static SharedPreferences.Editor save_editor;   //SharedPreferences保存
+    public static SharedPreferences recover_pre;  //SharedPreferences恢复
 
     private DatabaseHelper dbHelper;  //数据库
     private SQLiteDatabase db;
@@ -71,6 +78,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean[] bools;
     private String[] items;
     private int[] idArr;   //保存数据库所有id
+
+    //使用Android提供的Handel执行异步操作
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,18 +96,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recover_pre = getSharedPreferences("data", MODE_PRIVATE);
         notifCount = recover_pre.getInt("notifCount", 0);
         notifID = recover_pre.getInt("notifID", 0);
-        isAbnormalStoped = recover_pre.getBoolean("isAbnormalStoped", false);
         idArr = new int[notifCount];
-        dbSelect();
 
-        if (isAbnormalStoped) {   //如果为false，则表明上次正常退出
-            //此处为异常处理代码
-            isRecoverDialog();
-        } else {
-           //此处为正常处理代码
-            save_editor.putBoolean("isAbnormalStoped", true);   //如果程序退出之前都没有置为false，则发生异常
-            save_editor.apply();
-        }
+        dbSelect();   //填写数组ID
+        startService(new Intent(this, MainService.class));
+        isInterrupt();
+        Log.i(this.getClass().getName(), "MainActivity 初始化已完成");
     }
 
 
@@ -113,16 +117,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         title_text = intent.getStringExtra("title_text");
         content_text = intent.getStringExtra("content_text");
-
+        if (isPushed) {
+            revoke_tv.setTextColor(getResources().getColor(R.color.red));
+            revoke_tv.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));  //加粗
+        }
+        
     }
 
+    //以下几个函数用于测试
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i(this.getClass().getName(), "MainActivity 已启动");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(this.getClass().getName(), "MainActivity 已可见");
+    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        save_editor.putBoolean("isAbnormalStoped", false);
-        save_editor.apply();
-        Log.i(this.getClass().getName(), "正常终止MainActivity");
+        Log.i(this.getClass().getName(), "MainActivity 已终止");
     }
 
     //返回按键响应
@@ -141,7 +159,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else {  //当前Activity处于初次编辑状态（启动器进来）
                 contentExistDialog();
             }
-
         } else {
             finish();
         }
@@ -170,9 +187,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    //菜单项    考虑使用PopupWindow
     public void moreVertOnClick(View view) {
-        Toast.makeText(this, "测试", Toast.LENGTH_SHORT).show();
+        PopupMenu popup = new PopupMenu(this, view);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.menu_more, popup.getMenu());
+/*
+        popup.getMenu().findItem(R.id.minimalistModel).setChecked(true);  //设置选中
+*/
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                switch (menuItem.getItemId()) {
+                    case R.id.revokeAll:
+                        revokeAllNotification();
+                        break;
+                    case R.id.setting:
+                        break;
+                    case R.id.minimalistModel:
+                       /* menuItem.setChecked(false);*/
+                        break;
+                }
+                return false;
+            }
+        });
+        popup.show();
     }
+
 
     @Override
     public void onClick(View view) {
@@ -180,7 +221,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //闹钟按钮响应事件
             case R.id.alarm_iv:
 
-                revokeAllNotification();
                 break;
 
             //撤销按钮响应事件
@@ -201,8 +241,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (getText()) {   //EditText内有内容
                     if (isPushed) {  //如果已经推送，则为修改，使用通知原ID进行推送
                         notifID = notifID_intent;
-                        dbDelete(notifID);
-                        dbInsert();
+                        dbDelete(notifID);  //数据库删除原通知
+                        dbInsert();   //插入修改后新通知
                         pushNotification(notifID, title_text, content_text);
                         finish();
                     } else {  //如果未推送，则创建新的通知
@@ -214,8 +254,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 } else {
                     noContent();
+                    egg();
                 }
-                egg();
                 break;
         }
     }
@@ -225,13 +265,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //创建通知(根据id）
     public void pushNotification(int notifID, String title_text, String content_text) {
-        isPushed = true;  //已推送
 
         Intent intent = new Intent(this, MainActivity.class);  //单击消息意图
         intent.putExtra("notifID_intent", notifID);
         intent.putExtra("title_text", title_text);
         intent.putExtra("content_text", content_text);
-        intent.putExtra("isPushed", isPushed);
+        intent.putExtra("isPushed", true);
         //注意PendingIntent.getActivity的第二个参数，自行查阅文档
         PendingIntent pi = PendingIntent.getActivity(this, notifID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -250,7 +289,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //SharedPreferences形式持久化保存notifCount计数，防止Activity销毁后重新计数
         save_editor.putInt("notifCount", notifCount);
-        save_editor.putInt("notifID", notifID);
+        if (!isPushed) {
+            save_editor.putInt("notifID", notifID);
+        }
         save_editor.apply();
     }
 
@@ -279,6 +320,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         notifCount = 0;
         save_editor.putInt("notifCount", notifCount);
         save_editor.putInt("notifID", notifID);
+        save_editor.putBoolean("interrupt", false);
         save_editor.apply();
 
         //清空数据库表Notification
@@ -291,10 +333,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (title_auto.length() != 0 || content_auto.length() != 0) {
             title_text = title_auto.getText().toString();
             content_text = content_auto.getText().toString();
-            Log.i(this.getClass().getName(), "不为空");
             return true;
         } else {
-            Log.i(this.getClass().getName(), "为空");
             return false;
         }
     }
@@ -508,9 +548,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.setPositiveButton(R.string.recover_dialog, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int which) {
+                //使用数据库存储的ID全部发送
                 for (int i = 0; i < notifCount; ++i) {
                     pushNotification(idArr[i], dbSelectGetTitle(idArr[i]), dbSelectGetContent(idArr[i]));
                 }
+                save_editor.putBoolean("interrupt", false).apply();
                 finish();
             }
         });
@@ -562,18 +604,64 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         dbDelete(idArr[i]);  //并从数据库删除
                     }
                 }
+                //至于ID增长问题，继续使用SharedPreference读取出的最大值自增
                 if (notifCount == 0) {   //全部都没选的话
                     notifID = 0;
                 }
-
-                save_editor.putInt("notifCount", notifCount);
-                save_editor.apply();
+                save_editor.putInt("notifCount", notifCount).apply();
+                save_editor.putBoolean("interrupt", false).apply();
+                finish();
             }
         });
-        dialog.setNegativeButton(R.string.negative_dialog, null);
+        dialog.setNegativeButton(R.string.negative_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                revokeAllNotification();
+            }
+        });
         dialog.show();
     }
 
+
+    /**
+     *  多线程编程
+     *  1. 异常终止检测：由于所有Activity函数执行完后才执行Service，所以启动线程等待0.2s后MainService启动
+     *     此时MainActivity在子线程内进行标志位"interrupt"的读取
+     *     注意Android是线程不安全的，可以使用Android提供的异步方法进行多线程操作
+     */
+
+    @SuppressLint("HandlerLeak")
+    public void isInterrupt() {
+        handler = new Handler() {
+
+            @Override
+            public void handleMessage(Message message) {
+                switch (message.what) {
+                    //异常终止检测
+                    case WAIT_SERVICE_START:
+                        if (recover_pre.getBoolean("interrupt", true)) {
+                            isRecoverDialog();
+                        }
+                        break;
+                }
+
+            }
+        };
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        Message message = new Message();
+                        message.what = WAIT_SERVICE_START;
+                        handler.sendMessage(message);
+                    }
+                }, 200);
+            }
+        }).start();
+    }
 
     //时间选择对话框封装
 
@@ -594,8 +682,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // true表示采用24小时制
                 , true).show();
     }
-
-
 
 
     public void egg() {

@@ -21,6 +21,8 @@
         <item name="android:windowExitAnimation">@anim/pop_exit_anim</item>
     </style>
 
+
+
     <style name="SplitDialog" parent="AppTheme">
         <item name="android:windowCloseOnTouchOutside">true</item>
         <!--下面这行不管把背景设置成什么都会增大窗口宽度-->
@@ -59,14 +61,11 @@
     </style>
 
 
-    <!--<style name="MyAlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowFrame">@null</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowIsFloating">true</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
-        <item name="android:backgroundDimEnabled">true</item>
+    <!--<style name="popMenu_style" parent="@android:style/Widget.Holo.Light.PopupMenu">
+        <item name="android:dropDownSelector">@drawable/popenu_background</</span>item>
+        <item name="android:background">@color/springgreen</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/green</item>
     </style>-->
-</resources>
+
+    </resources>
