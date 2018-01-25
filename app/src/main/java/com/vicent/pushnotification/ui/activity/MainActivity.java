@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Handler;
@@ -27,7 +28,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -66,17 +70,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isPushed = false;  //断言是否已通知，可用于标记当前Activity状态
     private String title_text;
     private String content_text;
-    public static final int WAIT_SERVICE_START = 1;
+    public static final int WAIT_SERVICE_START = 1;  //等待主服务启动（多线程）
+    public static final int COUNT_DOWN = 5;   //倒计时
+    public static final int TIMING = 6;    //定时
 
+/*    private int[] Postion = new int[2];   //保存“撤销”按钮移动后相对父控件位置，用于动态加载布局*/
     public static SharedPreferences.Editor save_editor;   //SharedPreferences保存
     public static SharedPreferences recover_pre;  //SharedPreferences恢复
+
+    private SpannableStringBuilder title;
 
     private DatabaseHelper dbHelper;  //数据库
     private SQLiteDatabase db;
 
     //恢复Dialog使用
     private boolean[] bools;
-    private String[] items;
+    private SpannableStringBuilder[] items;
     private int[] idArr;   //保存数据库所有id
 
     //使用Android提供的Handel执行异步操作
@@ -86,14 +95,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        save_editor = getSharedPreferences("data", MODE_PRIVATE).edit();
+        recover_pre = getSharedPreferences("data", MODE_PRIVATE);
         findViews();
         setOnClickListeners();
         onNewIntent(getIntent());
         dbCreate();
-        save_editor = getSharedPreferences("data", MODE_PRIVATE).edit();
+
 
         //恢复notifCount计数
-        recover_pre = getSharedPreferences("data", MODE_PRIVATE);
         notifCount = recover_pre.getInt("notifCount", 0);
         notifID = recover_pre.getInt("notifID", 0);
         idArr = new int[notifCount];
@@ -102,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startService(new Intent(this, MainService.class));
         isInterrupt();
         Log.i(this.getClass().getName(), "MainActivity 初始化已完成");
+
     }
 
 
@@ -121,26 +132,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             revoke_tv.setTextColor(getResources().getColor(R.color.red));
             revoke_tv.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));  //加粗
         }
-        
-    }
 
-    //以下几个函数用于测试
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.i(this.getClass().getName(), "MainActivity 已启动");
-    }
+        title = new SpannableStringBuilder(getString(R.string.title_dialog));
+        title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.red)), 0, getString(R.string.title_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        title.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, getString(R.string.title_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i(this.getClass().getName(), "MainActivity 已可见");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.i(this.getClass().getName(), "MainActivity 已终止");
     }
 
     //返回按键响应
@@ -169,9 +165,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         title_auto = (AutoCompleteTextView) findViewById(R.id.title_auto);
         content_auto = (AutoCompleteTextView) findViewById(R.id.content_auto);
         alarm_iv = (ImageView) findViewById(R.id.alarm_iv);
-        revoke_tv = (TextView) findViewById(R.id.revoke_tv);
         push_tv = (TextView) findViewById(R.id.push_tv);
         mainLayout = (RelativeLayout)findViewById(R.id.mainLayout);
+        //至于为什么增加一个按钮，，，，，，
+        if (recover_pre.getBoolean("minimalistModel", false)) {
+            alarm_iv.setVisibility(View.GONE);
+            revoke_tv = (TextView) findViewById(R.id.revoke1_tv);
+            findViewById(R.id.revoke_tv).setVisibility(View.GONE);
+        } else {
+            revoke_tv = (TextView) findViewById(R.id.revoke_tv);
+            findViewById(R.id.revoke1_tv).setVisibility(View.GONE);
+        }
+
 
         //以下代码提供换行
         title_auto.setSingleLine(false);
@@ -192,9 +197,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         PopupMenu popup = new PopupMenu(this, view);
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.menu_more, popup.getMenu());
-/*
-        popup.getMenu().findItem(R.id.minimalistModel).setChecked(true);  //设置选中
-*/
+        if (recover_pre.getBoolean("minimalistModel", false)) {
+            popup.getMenu().findItem(R.id.autoCheck).setVisible(false);
+            popup.getMenu().findItem(R.id.recoverByHand).setVisible(false);
+            popup.getMenu().findItem(R.id.setting).setVisible(false);
+            popup.getMenu().findItem(R.id.revokeAll).setVisible(false);
+            popup.getMenu().findItem(R.id.minimalistModel).setChecked(true);
+        }
+        if (recover_pre.getBoolean("autoCheck", false)) {
+            popup.getMenu().findItem(R.id.autoCheck).setChecked(true);
+        }
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
@@ -202,10 +214,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case R.id.revokeAll:
                         revokeAllNotification();
                         break;
+                    case R.id.recoverByHand:
+                        if (recover_pre.getBoolean("neverReminder", true)) {
+                            isRecoverByHandDialog();
+                        }
+                        else {
+                            recoverByHandDialog();
+                        }
+                        break;
                     case R.id.setting:
+                        revoke_tv.setVisibility(View.GONE);
                         break;
                     case R.id.minimalistModel:
-                       /* menuItem.setChecked(false);*/
+                        if (recover_pre.getBoolean("minimalistModel", false)) {
+                            MinimalistModel(false);
+                        } else {
+                            MinimalistModel(true);
+                        }
+                        break;
+                    case R.id.autoCheck:
+                        if (recover_pre.getBoolean("autoCheckNeverReminder", true)) {  //如果提示
+                            autoCheckDialog();
+                        } else {   //如果不再提示
+                            if (recover_pre.getBoolean("autoCheck", false)) {
+                                save_editor.putBoolean("autoCheck", false).apply();
+                            } else {
+                                save_editor.putBoolean("autoCheck", true).apply();
+                            }
+
+                        }
                         break;
                 }
                 return false;
@@ -220,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()) {
             //闹钟按钮响应事件
             case R.id.alarm_iv:
-
+                Toast.makeText(this, "dsds", Toast.LENGTH_SHORT).show();
                 break;
 
             //撤销按钮响应事件
@@ -228,6 +265,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (isPushed) {
                     notifCount--;
                     if (notifCount == 0) {   //没有通知的话notifID也置为0
+                        notifID = 0;
+                    }
+                    revokeNotifiction();
+                    dbDelete(notifID_intent);
+                    finish();
+                }
+                break;
+
+            //撤销1按钮响应事件
+            case R.id.revoke1_tv:
+                if (isPushed) {
+                    notifCount--;
+                    if (notifCount == 0) {
                         notifID = 0;
                     }
                     revokeNotifiction();
@@ -263,7 +313,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // TODO 通知里的长文本可能需要展开，默认是不支持的
 
-    //创建通知(根据id）
+    //创建通知
     public void pushNotification(int notifID, String title_text, String content_text) {
 
         Intent intent = new Intent(this, MainActivity.class);  //单击消息意图
@@ -279,7 +329,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         NotificationCompat.Builder notificationBulider = new NotificationCompat.Builder(this, null)
                 .setContentTitle(title_text)
                 .setContentText(content_text)
-                .setSmallIcon(R.drawable.ic_alarm)
+                .setSmallIcon(R.mipmap.polls_tap)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.polls_tap))
                 .setContentIntent(pi)
                 .setOngoing(true)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(content_text))
@@ -481,7 +532,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         message_dialog.append(content); message_dialog.append(content_input);
 
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle(R.string.title_dialog);
+        dialog.setTitle(this.title);
         dialog.setMessage(message_dialog);
         dialog.setCancelable(false);
         dialog.setPositiveButton(R.string.positive_dialog, new DialogInterface.OnClickListener() {
@@ -525,7 +576,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         messageNotPushed_dialog.append(content); messageNotPushed_dialog.append(content_input);
 
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle(R.string.title_dialog);
+        dialog.setTitle(this.title);
         dialog.setMessage(messageNotPushed_dialog);
         dialog.setCancelable(false);
         dialog.setPositiveButton(R.string.positive_dialog, new DialogInterface.OnClickListener() {
@@ -542,7 +593,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void isRecoverDialog() {
 
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle(R.string.title_dialog);
+        dialog.setTitle(this.title);
         dialog.setMessage(R.string.message_isRecover_dialog);
         dialog.setCancelable(false);
         dialog.setPositiveButton(R.string.recover_dialog, new DialogInterface.OnClickListener() {
@@ -556,7 +607,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 finish();
             }
         });
-        dialog.setNeutralButton(R.string.neutral_dialog, new DialogInterface.OnClickListener() {
+        dialog.setNeutralButton(R.string.select2recover_dialog, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 recoverDialog();
@@ -575,12 +626,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void recoverDialog() {
 
         bools = new boolean[notifCount];
-        items = new String[notifCount];
+        items = new SpannableStringBuilder[notifCount];
 
         for (int i = 0; i < notifCount; ++i) {
             bools[i] = false;
-            items[i] = getString(R.string.title) + ": " + dbSelectGetTitle(idArr[i]) + "\n"
-                         + getString(R.string.content) + ": " + dbSelectGetContent(idArr[i]) + "\n";
+            SpannableStringBuilder title = new SpannableStringBuilder(dbSelectGetTitle(idArr[i]) + "\n");
+            SpannableStringBuilder content = new SpannableStringBuilder(dbSelectGetContent(idArr[i]) + "\n");
+            title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.teal)), 0, dbSelectGetTitle(idArr[i]).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            content.setSpan(new RelativeSizeSpan(0.8f), 0, dbSelectGetContent(idArr[i]).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            items[i] = title.append(content);
         }
 
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
@@ -613,7 +667,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 finish();
             }
         });
-        dialog.setNegativeButton(R.string.negative_dialog, new DialogInterface.OnClickListener() {
+        dialog.setNegativeButton(R.string.positive_dialog, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 revokeAllNotification();
@@ -623,8 +677,108 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    //手动恢复提示对话框
+    public void isRecoverByHandDialog() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(this.title);
+        dialog.setMessage(R.string.message_recoverByHand_dialog);
+        dialog.setCancelable(false);
+        dialog.setPositiveButton(R.string.select2recover_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                recoverByHandDialog();
+            }
+        });
+        dialog.setNeutralButton(R.string.neverReminder_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                save_editor.putBoolean("neverReminder", false).apply();
+            }
+        });
+        dialog.setNegativeButton(R.string.negative_dialog, null);
+        dialog.show();
+    }
+
+
+    //手动选择恢复对话框    //这段代码没法复用,因为取消按键
+    public void recoverByHandDialog() {
+
+        bools = new boolean[notifCount];
+        items = new SpannableStringBuilder[notifCount];
+
+        for (int i = 0; i < notifCount; ++i) {
+            bools[i] = false;
+            SpannableStringBuilder title = new SpannableStringBuilder(dbSelectGetTitle(idArr[i]) + "\n");
+            SpannableStringBuilder content = new SpannableStringBuilder(dbSelectGetContent(idArr[i]) + "\n");
+            title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.teal)), 0, dbSelectGetTitle(idArr[i]).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            content.setSpan(new RelativeSizeSpan(0.8f), 0, dbSelectGetContent(idArr[i]).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            items[i] = title.append(content);
+        }
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(R.string.needToRecover_dialog);
+        dialog.setMultiChoiceItems(items, bools, new DialogInterface.OnMultiChoiceClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                bools[which] = isChecked;   //标记选中
+            }
+        });
+        dialog.setCancelable(false);
+        dialog.setPositiveButton(R.string.push_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                for (int i = 0; i < items.length; i++) {
+                    if (bools[i]) {
+                        //逻辑
+                        pushNotification(idArr[i], dbSelectGetTitle(idArr[i]), dbSelectGetContent(idArr[i]));
+                    } else {
+                        notifCount--;   //未推送，减去
+                        dbDelete(idArr[i]);  //并从数据库删除
+                    }
+                }
+                //至于ID增长问题，继续使用SharedPreference读取出的最大值自增
+                if (notifCount == 0) {   //全部都没选的话
+                    notifID = 0;
+                }
+                save_editor.putInt("notifCount", notifCount).apply();
+                save_editor.putBoolean("interrupt", false).apply();
+                finish();
+            }
+        });
+        dialog.setNegativeButton(R.string.negative_dialog, null);
+        dialog.show();
+    }
+
+
+    //自动检测提示对话框
+    public void autoCheckDialog() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(this.title);
+        dialog.setMessage(R.string.message_autoCheck_dialog);
+        dialog.setCancelable(false);
+        dialog.setPositiveButton(R.string.open_autoCheck_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                save_editor.putBoolean("autoCheck", true).apply();
+            }
+        });
+        dialog.setNeutralButton(R.string.neverReminder_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                save_editor.putBoolean("autoCheckNeverReminder", false).apply();
+            }
+        });
+        dialog.setNegativeButton(R.string.close_autoCheck_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                save_editor.putBoolean("autoCheckNeverReminder", true).apply();
+            }
+        });
+        dialog.show();
+    }
+
     /**
-     *  多线程编程
+     *  多线程
      *  1. 异常终止检测：由于所有Activity函数执行完后才执行Service，所以启动线程等待0.2s后MainService启动
      *     此时MainActivity在子线程内进行标志位"interrupt"的读取
      *     注意Android是线程不安全的，可以使用Android提供的异步方法进行多线程操作
@@ -639,8 +793,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 switch (message.what) {
                     //异常终止检测
                     case WAIT_SERVICE_START:
-                        if (recover_pre.getBoolean("interrupt", true)) {
-                            isRecoverDialog();
+
+                        //极简模式，动态修改布局  //setTop这类函数只能onCreate()执行完成后生效
+                        if (recover_pre.getBoolean("interrupt", true)) {  //异常终止
+                            if (recover_pre.getBoolean("autoCheck", false)){  //自动检测开启
+                                isRecoverDialog();
+                            }
                         }
                         break;
                 }
@@ -654,34 +812,122 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new Timer().schedule(new TimerTask() {
                     @Override
                     public void run() {
+
                         Message message = new Message();
                         message.what = WAIT_SERVICE_START;
                         handler.sendMessage(message);
                     }
-                }, 200);
+                }, 100);
             }
         }).start();
     }
 
     //时间选择对话框封装
+    public void timePicker(int choose) {
 
-    public void timePicker() {
-        Calendar calendar = Calendar.getInstance();
-        new TimePickerDialog(this,
-                // 绑定TimePickerDialog的监听器
-                new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view,
-                                          int hourOfDay, int minute) {
-                        title_auto.setText("您选择了：" + hourOfDay + "时" + minute + "分");
+        switch (choose) {
+            case COUNT_DOWN:
+                break;
+            case TIMING:
+                Calendar calendar = Calendar.getInstance();
+                new TimePickerDialog(this,
+                        // 绑定TimePickerDialog的监听器
+                        new TimePickerDialog.OnTimeSetListener() {
+                            @Override
+                            public void onTimeSet(TimePicker view,
+                                                  int hourOfDay, int minute) {
+                                title_auto.setText("您选择了：" + hourOfDay + "时" + minute + "分");
+                            }
+                        }
+                        // 设置初始时间
+                        , calendar.get(Calendar.HOUR_OF_DAY)
+                        , calendar.get(Calendar.MINUTE)
+                        // true表示采用24小时制
+                        , true).show();
+                break;
+        }
+
+
+    }
+
+    //极简模式(包括动画）   //动画只能用于移位，移位后单击事件等还是响应原来的位置
+    public void MinimalistModel(boolean isOpen) {
+        if (isOpen) {
+            save_editor.putBoolean("minimalistModel", true).apply();
+            ScaleAnimation alarmAnim1 = new ScaleAnimation(
+                    1.0f, 0.0f, 1.0f, 0.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f
+            );
+            alarmAnim1.setDuration(1500);
+            alarmAnim1.setAnimationListener(new Animation.AnimationListener() {
+                public void onAnimationRepeat(Animation animation) {}
+                public void onAnimationStart(Animation animation) {}
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    alarm_iv.setVisibility(View.GONE);
+                }
+            });
+            alarm_iv.startAnimation(alarmAnim1);
+
+            final TranslateAnimation revokeAnim = new TranslateAnimation(
+                    Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_PARENT, -0.355f,
+                    Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, 0.0f
+            );
+            revokeAnim.setDuration(1500);
+            //下面一行代码会和  revoke_tv.setVisibility(View.GONE)冲突，最终不消失
+            /*revokeAnim.setFillAfter(true);   //停止在结束位置*/
+            revokeAnim.setAnimationListener(new Animation.AnimationListener() {
+                public void onAnimationStart(Animation animation) {
+                }
+                public void onAnimationRepeat(Animation animation) {}
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    revoke_tv.clearAnimation();    //先清除动画，可以防止闪烁
+                    revoke_tv.setVisibility(View.GONE);
+                    revoke_tv = (TextView)findViewById(R.id.revoke1_tv);
+                    revoke_tv.setVisibility(View.VISIBLE);
+                    if (isPushed) {
+                        revoke_tv.setTextColor(getResources().getColor(R.color.red));
+                        revoke_tv.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));  //加粗
                     }
                 }
-                // 设置初始时间
-                , calendar.get(Calendar.HOUR_OF_DAY)
-                , calendar.get(Calendar.MINUTE)
-                // true表示采用24小时制
-                , true).show();
+            });
+            revoke_tv.startAnimation(revokeAnim);
+
+        } else {
+            save_editor.putBoolean("minimalistModel", false).apply();
+            alarm_iv.setVisibility(View.VISIBLE);
+            TranslateAnimation alarmAnim2 = new TranslateAnimation(
+                    Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
+                    Animation.RELATIVE_TO_PARENT, 1.0f, Animation.RELATIVE_TO_SELF, 0.0f
+            );
+            alarmAnim2.setDuration(1500);
+            alarm_iv.startAnimation(alarmAnim2);
+
+            TranslateAnimation revokeAnim = new TranslateAnimation(
+                    Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_PARENT, 0.355f,
+                    Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, 0.0f
+            );
+            revokeAnim.setDuration(1500);
+            revokeAnim.setAnimationListener(new Animation.AnimationListener() {
+                public void onAnimationStart(Animation animation) {}
+                public void onAnimationRepeat(Animation animation) {}
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    revoke_tv.clearAnimation();    //先清除动画，可以防止闪烁
+                    revoke_tv.setVisibility(View.GONE);
+                    revoke_tv = (TextView)findViewById(R.id.revoke_tv);
+                    revoke_tv.setVisibility(View.VISIBLE);
+                    if (isPushed) {
+                        revoke_tv.setTextColor(getResources().getColor(R.color.red));
+                        revoke_tv.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));  //加粗
+                    }
+                }
+            });
+            revoke_tv.startAnimation(revokeAnim);
+        }
     }
+
+
 
 
     public void egg() {

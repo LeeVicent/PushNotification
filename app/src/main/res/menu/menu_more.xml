@@ -2,22 +2,30 @@
 <menu xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
-
+    <group
+        android:checkableBehavior="all">
+        <item
+            android:id="@+id/minimalistModel"
+            android:title="@string/minimalistModel_menu" />
+        <item
+            android:id="@+id/autoCheck"
+            android:title="@string/autoCheck_menu" />
+    </group>
     <item
         android:id="@+id/revokeAll"
         android:actionLayout="@layout/activity_main"
         android:title="@string/revokeAll_menu">
     </item>
     <item
+        android:id="@+id/recoverByHand"
+        android:actionLayout="@layout/activity_main"
+        android:title="@string/recoverByHand_menu">
+    </item>
+    <item
         android:id="@+id/setting"
         android:actionLayout="@layout/activity_main"
         android:title="@string/setting_menu">
     </item>
-    <group
-        android:checkableBehavior="all">
-        <item
-            android:id="@+id/minimalistModel"
-            android:title="@string/minimalistModel_menu" />
-    </group>
+
 
 </menu>

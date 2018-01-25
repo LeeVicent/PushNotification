@@ -18,16 +18,23 @@
     <string name="message_dialog">检测到输入框存在已编辑但未推送文本，确认放弃吗？</string>
     <string name="messageNotPushed_dialog">检测到输入框存在已修改但未推送文本，确认放弃吗？</string>
     <string name="message_isRecover_dialog">检测到程序异常终止, 是否恢复已推送通知？</string>
+    <string name="message_recoverByHand_dialog">
+        手动恢复仅适用于自动检测失败的情况下使用，此操作将会读取本地数据库，未选中的将会删除，选中的将会推送。\n\n请确认当前通知栏内没有已推送通知，否则可能会进行覆盖。
+    </string>
+    <string name="message_autoCheck_dialog">由于国产Rom对于后台任务清理的程度不同，有的会清理App所在进程，包括注册进系统的通知。勾选此项后，请尝试使用任务管理器清理一次后台，若通知还在，请关闭此选项。\n\n当然，最好的方案是锁住此App，并移出省电优化名单。 \n\n请确认当前通知栏内没有已推送通知，否则可能会进行覆盖。</string>
     <string name="messageBefore_dialog">原文本</string>
     <string name="messageAfter_dialog">修改为</string>
     <string name="messageInput_dialog">已输入</string>
     <string name="positive_dialog">放弃</string>
     <string name="negative_dialog">取消</string>
     <string name="recover_dialog">恢复所有</string>
+    <string name="neverReminder_dialog">不再提示</string>
     <string name="push_dialog">推送</string>
+    <string name="allSelect_dialog">全选</string>
+    <string name="open_autoCheck_dialog">开启</string>
+    <string name="close_autoCheck_dialog">关闭</string>
     <string name="needToRecover_dialog">待恢复通知列表</string>
-    <string name="neutral_dialog">选择恢复</string>
-
+    <string name="select2recover_dialog">选择恢复</string>
 
 
     //egg
@@ -54,5 +61,7 @@
     <string name="revokeAll_menu">撤销所有通知</string>
     <string name="minimalistModel_menu">极简模式</string>
     <string name="setting_menu">设置</string>
+    <string name="recoverByHand_menu">手动恢复</string>
+    <string name="autoCheck_menu">自动检测</string>
 
 </resources>
