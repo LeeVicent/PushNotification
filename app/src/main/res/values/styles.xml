@@ -1,6 +1,14 @@
 <resources>
 
+    //App样式  //暂时未使用
     <style name="AppTheme" parent="@style/Base.Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/posColor</item>
+        <item name="android:windowAnimationStyle">@style/animationUp</item>
+    </style>
+
+
+    //主窗口样式  //悬浮
+    <style name="MainActivityTheme" parent="@style/AppTheme">
         <item name="colorAccent">@color/posColor</item>
         <item name="android:backgroundDimAmount">0.2</item>
         <item name="android:windowNoTitle">true</item>
@@ -10,27 +18,13 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:backgroundDimEnabled">true</item>
         <item name="android:windowCloseOnTouchOutside">false</item>
-        <item name="android:windowAnimationStyle">@style/animationUp</item>
-    </style>
-    <style name="Dialog" parent="AppTheme">
-        <item name="android:windowCloseOnTouchOutside">true</item>
     </style>
 
-    <style name="animationUp" parent="@android:style/Animation.Translucent">
-        <item name="android:windowEnterAnimation">@anim/pop_enter_anim</item>
-        <item name="android:windowExitAnimation">@anim/pop_exit_anim</item>
+    //其他窗体样式，常规
+    <style name="OtherActivityTheme" parent="@style/Base.Theme.AppCompat.Light">
     </style>
 
-
-
-    <style name="SplitDialog" parent="AppTheme">
-        <item name="android:windowCloseOnTouchOutside">true</item>
-        <!--下面这行不管把背景设置成什么都会增大窗口宽度-->
-        <item name="android:windowBackground">@color/white</item>
-    </style>
-
-
-
+    //EditText主题
     <style name="EtTheme">
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/fontColor</item>
@@ -48,6 +42,7 @@
         <item name="android:inputType">textMultiLine</item>
     </style>
 
+    //Button主题
     <style name="BtnTheme">
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/btnFontColor</item>
@@ -60,12 +55,11 @@
         <item name="android:onClick">onClick</item>
     </style>
 
+    //动画
+    <style name="animationUp" parent="@android:style/Animation.Translucent">
+        <item name="android:windowEnterAnimation">@anim/pop_enter_anim</item>
+        <item name="android:windowExitAnimation">@anim/pop_exit_anim</item>
+    </style>
 
-    <!--<style name="popMenu_style" parent="@android:style/Widget.Holo.Light.PopupMenu">
-        <item name="android:dropDownSelector">@drawable/popenu_background</</span>item>
-        <item name="android:background">@color/springgreen</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textColor">@color/green</item>
-    </style>-->
 
     </resources>

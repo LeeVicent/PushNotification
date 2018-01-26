@@ -4,11 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/mainLayout"
     android:layout_width="match_parent"
-    android:layout_height="190dp"
+    android:layout_height="wrap_content"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:orientation="vertical"
-    tools:context="com.vicent.pushnotification.ui.activity.MainActivity">>
+    android:windowActionBar="false"
+    tools:context="com.vicent.pushnotification.ui.activity.MainActivity">
 
     <ImageView
         android:layout_width="33dp"
@@ -95,6 +96,7 @@
         android:layout_alignBaseline="@id/revoke_tv"
         android:text="@string/push_text"
         android:textColor="@color/posColor"
+        android:layout_marginBottom="22dp"
         style="@style/BtnTheme"/>
 
 

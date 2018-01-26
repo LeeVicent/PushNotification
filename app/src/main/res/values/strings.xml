@@ -17,15 +17,17 @@
     <string name="title_dialog">注意</string>
     <string name="message_dialog">检测到输入框存在已编辑但未推送文本，确认放弃吗？</string>
     <string name="messageNotPushed_dialog">检测到输入框存在已修改但未推送文本，确认放弃吗？</string>
-    <string name="message_isRecover_dialog">检测到程序异常终止, 是否恢复已推送通知？</string>
+    <string name="message_isRecover_dialog">检测到应用曾经异常退出, 是否恢复已推送通知？\n\n如果频繁提示，请关闭“自动检测”并将应用添加任务锁</string>
     <string name="message_recoverByHand_dialog">
-        手动恢复仅适用于自动检测失败的情况下使用，此操作将会读取本地数据库，未选中的将会删除，选中的将会推送。\n\n请确认当前通知栏内没有已推送通知，否则可能会进行覆盖。
+        手动恢复仅适用于自动检测失败的情况下使用，可查看所有未正常撤回通知（包括现在位于状态栏的）。此操作将会读取本地数据库，未选中的将会删除，选中的将会推送。\n\n请确认当前通知栏内没有已推送通知，否则可能会进行覆盖。
     </string>
-    <string name="message_autoCheck_dialog">由于国产Rom对于后台任务清理的程度不同，有的会清理App所在进程，包括注册进系统的通知。勾选此项后，请尝试使用任务管理器清理一次后台，若通知还在，请关闭此选项。\n\n当然，最好的方案是锁住此App，并移出省电优化名单。 \n\n请确认当前通知栏内没有已推送通知，否则可能会进行覆盖。</string>
+    <string name="message_autoCheck_dialog">由于国产Rom对于后台任务清理的程度不同，有的会清理App所在进程，包括注册进系统的通知。勾选此项后，请尝试使用任务管理器清理一次后台，若通知还在，请关闭此选项。\n\n当然，最好的方案是锁住此App，并移出省电优化名单。</string>
+    <string name="message_isRevokeAllNotification_dialog">请再次确认，此操作不可逆！</string>
     <string name="messageBefore_dialog">原文本</string>
     <string name="messageAfter_dialog">修改为</string>
     <string name="messageInput_dialog">已输入</string>
     <string name="positive_dialog">放弃</string>
+    <string name="enter_dialog">确认</string>
     <string name="negative_dialog">取消</string>
     <string name="recover_dialog">恢复所有</string>
     <string name="neverReminder_dialog">不再提示</string>
@@ -63,5 +65,8 @@
     <string name="setting_menu">设置</string>
     <string name="recoverByHand_menu">手动恢复</string>
     <string name="autoCheck_menu">自动检测</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <string name="title_activity_setting">设置</string>
 
 </resources>

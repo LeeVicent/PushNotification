@@ -2,10 +2,8 @@ package com.vicent.pushnotification.ui.activity;
 
 
 import android.annotation.SuppressLint;
-import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
@@ -20,10 +18,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -45,6 +43,7 @@ import android.graphics.drawable.Drawable;
 import android.widget.Toast;
 
 import com.vicent.pushnotification.backstage.MainService;
+import com.vicent.pushnotification.ui.fragment.SettingFragment;
 import com.vicent.pushnotification.unti.DatabaseHelper;
 
 import com.vicent.pushnotification.R;
@@ -111,6 +110,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dbSelect();   //填写数组ID
         startService(new Intent(this, MainService.class));
         isInterrupt();
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.hide();
+        }
+
         Log.i(this.getClass().getName(), "MainActivity 初始化已完成");
 
     }
@@ -195,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //菜单项    考虑使用PopupWindow
     public void moreVertOnClick(View view) {
         PopupMenu popup = new PopupMenu(this, view);
-        MenuInflater inflater = popup.getMenuInflater();
+        final MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.menu_more, popup.getMenu());
         if (recover_pre.getBoolean("minimalistModel", false)) {
             popup.getMenu().findItem(R.id.autoCheck).setVisible(false);
@@ -212,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public boolean onMenuItemClick(MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
                     case R.id.revokeAll:
-                        revokeAllNotification();
+                        isRevokeAllNotification();
                         break;
                     case R.id.recoverByHand:
                         if (recover_pre.getBoolean("neverReminder", true)) {
@@ -223,7 +228,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                         break;
                     case R.id.setting:
-                        revoke_tv.setVisibility(View.GONE);
+                        Intent intent = new Intent(MainActivity.this, SettingActivity.class);
+                        startActivity(intent);
                         break;
                     case R.id.minimalistModel:
                         if (recover_pre.getBoolean("minimalistModel", false)) {
@@ -613,12 +619,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 recoverDialog();
             }
         });
-        dialog.setNegativeButton(R.string.negative_dialog, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                revokeAllNotification();
-            }
-        });
+        dialog.setNegativeButton(R.string.negative_dialog, null);
         dialog.show();
     }
 
@@ -771,9 +772,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.setNegativeButton(R.string.close_autoCheck_dialog, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                save_editor.putBoolean("autoCheckNeverReminder", true).apply();
+                save_editor.putBoolean("autoCheckNeverReminder", false).apply();
             }
         });
+        dialog.show();
+    }
+
+
+    //撤销所有再次确认提示对话框
+    public void isRevokeAllNotification() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(this.title);
+        dialog.setMessage(R.string.message_isRevokeAllNotification_dialog);
+        dialog.setCancelable(false);
+        dialog.setPositiveButton(R.string.enter_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                revokeAllNotification();
+            }
+        });
+        dialog.setNegativeButton(R.string.negative_dialog, null);
         dialog.show();
     }
 
@@ -793,7 +811,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 switch (message.what) {
                     //异常终止检测
                     case WAIT_SERVICE_START:
-
                         //极简模式，动态修改布局  //setTop这类函数只能onCreate()执行完成后生效
                         if (recover_pre.getBoolean("interrupt", true)) {  //异常终止
                             if (recover_pre.getBoolean("autoCheck", false)){  //自动检测开启
@@ -812,7 +829,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new Timer().schedule(new TimerTask() {
                     @Override
                     public void run() {
-
                         Message message = new Message();
                         message.what = WAIT_SERVICE_START;
                         handler.sendMessage(message);
