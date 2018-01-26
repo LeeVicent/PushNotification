@@ -1,6 +1,6 @@
 <resources>
 
-    //App样式  //暂时未使用
+    //App样式Dialog  //由于存在两种窗体暂时未使用
     <style name="AppTheme" parent="@style/Base.Theme.AppCompat.Light.Dialog">
         <item name="colorAccent">@color/posColor</item>
         <item name="android:windowAnimationStyle">@style/animationUp</item>
@@ -23,6 +23,23 @@
     //其他窗体样式，常规
     <style name="OtherActivityTheme" parent="@style/Base.Theme.AppCompat.Light">
     </style>
+
+
+    //日间模式  MainActivityTheme
+    <style name="MainActivityTheme.Day" parent="MainActivityTheme">
+        <!-- 日间模式下 "custom_attr_app_bg" 的赋值为#FFFFFF -->
+        <item name="custom_attr_app_bg">@color/white</item>
+    </style>
+
+    //夜间模式  MainActivityTheme
+    <style name="MainActivityTheme.Night">
+        <!-- 日间模式下 "custom_attr_app_bg" 的赋值为#FFFFFF -->
+        <item name="custom_attr_app_bg">@color/white_translucent</item>
+    </style>
+
+
+
+
 
     //EditText主题
     <style name="EtTheme">

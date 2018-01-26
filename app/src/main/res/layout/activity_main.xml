@@ -7,8 +7,10 @@
     android:layout_height="wrap_content"
     android:focusable="true"
     android:focusableInTouchMode="true"
+    android:background="?attr/custom_attr_app_bg"
     android:orientation="vertical"
     android:windowActionBar="false"
+
     tools:context="com.vicent.pushnotification.ui.activity.MainActivity">
 
     <ImageView

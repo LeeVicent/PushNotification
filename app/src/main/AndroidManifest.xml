@@ -11,7 +11,7 @@
         <activity
             android:name=".ui.activity.MainActivity"
             android:launchMode="singleTop"
-            android:theme="@style/MainActivityTheme">
+            android:theme="@style/MainActivityTheme.Night">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

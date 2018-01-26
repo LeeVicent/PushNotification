@@ -111,10 +111,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startService(new Intent(this, MainService.class));
         isInterrupt();
 
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.hide();
-        }
 
         Log.i(this.getClass().getName(), "MainActivity 初始化已完成");
 
