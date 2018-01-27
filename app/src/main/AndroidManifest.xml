@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.vicent.pushnotification">
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/polls_tap"
@@ -11,20 +13,18 @@
         <activity
             android:name=".ui.activity.MainActivity"
             android:launchMode="singleTop"
-            android:theme="@style/MainActivityTheme.Night">
+            android:theme="@style/MainActivityTheme.Day">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ui.activity.SettingActivity"
             android:label="@string/title_activity_setting"
-            android:theme="@style/OtherActivityTheme">
-        </activity>
-
+            android:launchMode="singleTop"
+            android:theme="@style/OtherActivityTheme.Day" />
 
         <service
             android:name=".backstage.MainService"
@@ -35,6 +35,14 @@
             android:enabled="true"
             android:exported="true" />
 
+        <receiver
+            android:name=".backstage.BootCompletedReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

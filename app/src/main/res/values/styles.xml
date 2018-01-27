@@ -2,14 +2,13 @@
 
     //App样式Dialog  //由于存在两种窗体暂时未使用
     <style name="AppTheme" parent="@style/Base.Theme.AppCompat.Light.Dialog">
-        <item name="colorAccent">@color/posColor</item>
+        <item name="colorAccent">?attr/custom_attr_accent</item>
         <item name="android:windowAnimationStyle">@style/animationUp</item>
     </style>
 
 
     //主窗口样式  //悬浮
     <style name="MainActivityTheme" parent="@style/AppTheme">
-        <item name="colorAccent">@color/posColor</item>
         <item name="android:backgroundDimAmount">0.2</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsFloating">true</item>
@@ -22,23 +21,66 @@
 
     //其他窗体样式，常规
     <style name="OtherActivityTheme" parent="@style/Base.Theme.AppCompat.Light">
+        <item name="actionBarTheme">@style/windowTitleBackgroundStyle</item>
+    </style>
+    <style name="windowTitleBackgroundStyle">
+        <item name="android:background">?attr/actionBar_bg</item>
     </style>
 
 
     //日间模式  MainActivityTheme
     <style name="MainActivityTheme.Day" parent="MainActivityTheme">
-        <!-- 日间模式下 "custom_attr_app_bg" 的赋值为#FFFFFF -->
         <item name="custom_attr_app_bg">@color/white</item>
+        <item name="custom_attr_accent">@color/posColor</item>
+        <item name="attr_icon">@color/posColor</item>
+        <item name="attr_textHint">@color/gery</item>
+        <item name="attr_text">@color/black</item>
     </style>
 
     //夜间模式  MainActivityTheme
     <style name="MainActivityTheme.Night">
-        <!-- 日间模式下 "custom_attr_app_bg" 的赋值为#FFFFFF -->
-        <item name="custom_attr_app_bg">@color/white_translucent</item>
+
+        <item name="custom_attr_app_bg">@color/night_back</item>
+        <item name="custom_attr_accent">@color/teal</item>
+        <item name="attr_icon">@color/teal</item>
+        <item name="attr_textHint">@color/light_gery</item>
+        <item name="attr_text">@color/teal</item>
+        <item name="android:popupMenuStyle">@style/popMenu_style_night</item>
+    </style>
+
+    //日间模式  OtherActivityTheme
+    <style name="OtherActivityTheme.Day" parent="OtherActivityTheme">
+        <item name="preference_category_text">@color/posColor</item>
+        <item name="custom_attr_app_bg">@color/white</item>
+        <item name="actionBar_bg">@color/white</item>
+        <item name="preference_category_title">@color/night_back</item>
+    </style>
+
+    //夜间模式  OtherActivityTheme
+    <style name="OtherActivityTheme.Night" parent="OtherActivityTheme">
+        <item name="preference_category_text">@color/posColor</item>
+        <item name="custom_attr_app_bg">@color/night_back</item>
+        <item name="actionBar_bg">@color/grey_2</item>
+        <item name="preference_category_title">@color/teal</item>
+    </style>
+
+
+    <style name="popMenu_style_day" parent="@android:style/Widget.PopupMenu">
+       <!-- <item name="android:popupBackground">@color/white</item>-->
+    </style>
+
+    <style name="popMenu_style_night" parent="@android:style/Theme.Material.Light">
+        <item name="android:popupBackground">@color/night_back</item>
+        <item name="android:elevation">10dp</item>
     </style>
 
 
 
+    //AlertDialog 夜间模式（白天就使用默认的好了）
+    <style name="AlertDialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:background">@color/night_back</item>
+    </style>
 
 
     //EditText主题

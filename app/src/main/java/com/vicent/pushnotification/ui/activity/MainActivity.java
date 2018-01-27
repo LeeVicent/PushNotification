@@ -16,6 +16,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.LightingColorFilter;
 import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Message;
@@ -76,6 +77,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 /*    private int[] Postion = new int[2];   //保存“撤销”按钮移动后相对父控件位置，用于动态加载布局*/
     public static SharedPreferences.Editor save_editor;   //SharedPreferences保存
     public static SharedPreferences recover_pre;  //SharedPreferences恢复
+    public static SharedPreferences.Editor save_editor_v;
+    public static SharedPreferences recover_pre_v;
 
     private SpannableStringBuilder title;
 
@@ -90,12 +93,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //使用Android提供的Handel执行异步操作
     private Handler handler;
 
+    public static MainActivity instance = null;   //用于刷新
+    public static MainActivity temp = new MainActivity();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        instance = this;    //用于其他页面访问
         save_editor = getSharedPreferences("data", MODE_PRIVATE).edit();
+        save_editor_v = getSharedPreferences("com.vicent.pushnotification_preferences", MODE_PRIVATE).edit();
         recover_pre = getSharedPreferences("data", MODE_PRIVATE);
+        recover_pre_v = getSharedPreferences("com.vicent.pushnotification_preferences", MODE_PRIVATE);
+
+        if (recover_pre_v.getBoolean("1", false)) {
+              setTheme(R.style.MainActivityTheme_Night);  //主题设定必须位于setContentView()之前调用
+        }
+        setContentView(R.layout.activity_main);
         findViews();
         setOnClickListeners();
         onNewIntent(getIntent());
@@ -111,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startService(new Intent(this, MainService.class));
         isInterrupt();
 
-
+        bootCompleted();
         Log.i(this.getClass().getName(), "MainActivity 初始化已完成");
 
     }
@@ -195,15 +208,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //菜单项    考虑使用PopupWindow
     public void moreVertOnClick(View view) {
-        PopupMenu popup = new PopupMenu(this, view);
+       /* Context context = getBaseContext();
+        context.setTheme(R.style.popMenu_style);*/
+        PopupMenu popup = new PopupMenu(MainActivity.this, view);
+
         final MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.menu_more, popup.getMenu());
+
         if (recover_pre.getBoolean("minimalistModel", false)) {
             popup.getMenu().findItem(R.id.autoCheck).setVisible(false);
             popup.getMenu().findItem(R.id.recoverByHand).setVisible(false);
             popup.getMenu().findItem(R.id.setting).setVisible(false);
             popup.getMenu().findItem(R.id.revokeAll).setVisible(false);
             popup.getMenu().findItem(R.id.minimalistModel).setChecked(true);
+            popup.getMenu().findItem(R.id.changeTheme).setVisible(false);
+        }
+        if (recover_pre_v.getBoolean("1", false)) {
+            SpannableStringBuilder autoCheck = new SpannableStringBuilder(getString(R.string.autoCheck_menu));
+            SpannableStringBuilder recoverByHand = new SpannableStringBuilder(getString(R.string.recoverByHand_menu));
+            SpannableStringBuilder setting = new SpannableStringBuilder(getString(R.string.setting_menu));
+            SpannableStringBuilder minimalistModel = new SpannableStringBuilder(getString(R.string.minimalistModel_menu));
+            SpannableStringBuilder revokeAll = new SpannableStringBuilder(getString(R.string.revokeAll_menu));
+            SpannableStringBuilder changeTheme = new SpannableStringBuilder(getString(R.string.changeTheme_menu));
+            autoCheck.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.autoCheck_menu).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            recoverByHand.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.recoverByHand_menu).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            setting.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.setting_menu).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            minimalistModel.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.minimalistModel_menu).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            revokeAll.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.revokeAll_menu).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            changeTheme.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.changeTheme_menu).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            popup.getMenu().findItem(R.id.autoCheck).setTitle(autoCheck);
+            popup.getMenu().findItem(R.id.recoverByHand).setTitle(recoverByHand);
+            popup.getMenu().findItem(R.id.setting).setTitle(setting);
+            popup.getMenu().findItem(R.id.revokeAll).setTitle(revokeAll);
+            popup.getMenu().findItem(R.id.minimalistModel).setTitle(minimalistModel);
+            popup.getMenu().findItem(R.id.changeTheme).setTitle(changeTheme);
+
         }
         if (recover_pre.getBoolean("autoCheck", false)) {
             popup.getMenu().findItem(R.id.autoCheck).setChecked(true);
@@ -212,6 +251,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
+                    case R.id.changeTheme:
+                        if (recover_pre_v.getBoolean("1", false)) {
+                            save_editor_v.putBoolean("1", false).apply();
+                            recreate();
+                        } else {
+                            save_editor_v.putBoolean("1", true).apply();
+                            recreate();
+                        }
+                        break;
                     case R.id.revokeAll:
                         isRevokeAllNotification();
                         break;
@@ -259,7 +307,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()) {
             //闹钟按钮响应事件
             case R.id.alarm_iv:
-                Toast.makeText(this, "dsds", Toast.LENGTH_SHORT).show();
+                setTheme(R.style.MainActivityTheme_Day);
                 break;
 
             //撤销按钮响应事件
@@ -397,6 +445,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void noContent() {
         //内容为空提醒
         Drawable drawable = getResources().getDrawable(R.drawable.ic_create);//获取图片资源
+        //选择应用颜色对于这个图标无效
+        if (recover_pre.getBoolean("changeTheme", false)) {
+            drawable.setColorFilter(new LightingColorFilter(0xEEEEEFF, 0x009688));
+        }
         drawable.setBounds(0, 0, 72, 72);
         //这里R.string.error_et无法引用，原因暂时未知
         title_auto.setError(getString(R.string.error_et), drawable);
@@ -529,11 +581,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             content_input.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.posColor)), 0, content_auto.getText().toString().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         }
-
+        AlertDialog.Builder dialog;
+        if (recover_pre_v.getBoolean("1", false)) {
+            message_dialog.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            messageInput_dialog.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.messageInput_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.title).length() + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            content.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.content).length() + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
+        } else {
+            dialog = new AlertDialog.Builder(this);
+        }
         message_dialog.append(messageInput_dialog); message_dialog.append(title); message_dialog.append(titie_input);
         message_dialog.append(content); message_dialog.append(content_input);
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
         dialog.setTitle(this.title);
         dialog.setMessage(message_dialog);
         dialog.setCancelable(false);
@@ -566,18 +627,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if ( !title_auto.getText().toString().equals(title_text)) {   //如果标题被修改，则变色
             title_original.setSpan(new ForegroundColorSpan(Color.RED), 0, title_text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             title_input.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.posColor)), 0, title_auto.getText().toString().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        } else {
+            title_original.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, title_text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            title_input.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, title_auto.getText().toString().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         if ( !content_auto.getText().toString().equals(content_text)) {  //如果内容被修改，则变色
             content_original.setSpan(new ForegroundColorSpan(Color.RED), 0, content_text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             content_input.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.posColor)), 0, content_auto.getText().toString().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        } else {
+            content_original.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, content_text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            content_input.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, content_auto.getText().toString().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
+        AlertDialog.Builder dialog;
+        if (recover_pre_v.getBoolean("1", false)) {
+            messageNotPushed_dialog.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.messageNotPushed_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.title).length() + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            content.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.content).length() + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
+        } else {
+            dialog = new AlertDialog.Builder(this);
         }
 
         messageNotPushed_dialog.append(messageBefore_dialog); messageNotPushed_dialog.append(title); messageNotPushed_dialog.append(title_original);
         messageNotPushed_dialog.append(content); messageNotPushed_dialog.append(content_original); messageNotPushed_dialog.append(messageAfter_dialog);
+        if (recover_pre_v.getBoolean("1", false)) {
+            //虽然一样，也得应用两次
+            title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.title).length() + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            content.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.content).length() + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
         messageNotPushed_dialog.append(title); messageNotPushed_dialog.append(title_input);
         messageNotPushed_dialog.append(content); messageNotPushed_dialog.append(content_input);
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle(this.title);
         dialog.setMessage(messageNotPushed_dialog);
         dialog.setCancelable(false);
@@ -594,9 +675,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //是否恢复对话框
     public void isRecoverDialog() {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_isRecover_dialog));
+        AlertDialog.Builder dialog;
+        if (recover_pre_v.getBoolean("1", false)) {
+            message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_isRecover_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
+        } else {
+            dialog = new AlertDialog.Builder(this);
+        }
         dialog.setTitle(this.title);
-        dialog.setMessage(R.string.message_isRecover_dialog);
+        dialog.setMessage(message);
         dialog.setCancelable(false);
         dialog.setPositiveButton(R.string.recover_dialog, new DialogInterface.OnClickListener() {
             @Override
@@ -630,11 +718,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             SpannableStringBuilder title = new SpannableStringBuilder(dbSelectGetTitle(idArr[i]) + "\n");
             SpannableStringBuilder content = new SpannableStringBuilder(dbSelectGetContent(idArr[i]) + "\n");
             title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.teal)), 0, dbSelectGetTitle(idArr[i]).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            content.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, dbSelectGetContent(idArr[i]).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             content.setSpan(new RelativeSizeSpan(0.8f), 0, dbSelectGetContent(idArr[i]).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             items[i] = title.append(content);
         }
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        AlertDialog.Builder dialog;
+        if (recover_pre_v.getBoolean("1", false)) {
+            dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
+        } else {
+            dialog = new AlertDialog.Builder(this);
+        }
         dialog.setTitle(R.string.needToRecover_dialog);
         dialog.setMultiChoiceItems(items, bools,new DialogInterface.OnMultiChoiceClickListener() {
             @Override
@@ -664,21 +758,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 finish();
             }
         });
-        dialog.setNegativeButton(R.string.positive_dialog, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                revokeAllNotification();
-            }
-        });
+        dialog.setNegativeButton(R.string.negative_dialog, null);
         dialog.show();
     }
 
 
     //手动恢复提示对话框
     public void isRecoverByHandDialog() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_recoverByHand_dialog));
+        AlertDialog.Builder dialog;
+        if (recover_pre_v.getBoolean("1", false)) {
+            message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_recoverByHand_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
+        } else {
+            dialog = new AlertDialog.Builder(this);
+        }
         dialog.setTitle(this.title);
-        dialog.setMessage(R.string.message_recoverByHand_dialog);
+        dialog.setMessage(message);
         dialog.setCancelable(false);
         dialog.setPositiveButton(R.string.select2recover_dialog, new DialogInterface.OnClickListener() {
             @Override
@@ -708,11 +804,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             SpannableStringBuilder title = new SpannableStringBuilder(dbSelectGetTitle(idArr[i]) + "\n");
             SpannableStringBuilder content = new SpannableStringBuilder(dbSelectGetContent(idArr[i]) + "\n");
             title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.teal)), 0, dbSelectGetTitle(idArr[i]).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            content.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, dbSelectGetContent(idArr[i]).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             content.setSpan(new RelativeSizeSpan(0.8f), 0, dbSelectGetContent(idArr[i]).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             items[i] = title.append(content);
         }
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        AlertDialog.Builder dialog;
+        if (recover_pre_v.getBoolean("1", false)) {
+            dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
+        } else {
+            dialog = new AlertDialog.Builder(this);
+        }
         dialog.setTitle(R.string.needToRecover_dialog);
         dialog.setMultiChoiceItems(items, bools, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
@@ -749,9 +851,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //自动检测提示对话框
     public void autoCheckDialog() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_autoCheck_dialog));
+        AlertDialog.Builder dialog;
+        if (recover_pre_v.getBoolean("1", false)) {
+            message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_autoCheck_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
+        } else {
+            dialog = new AlertDialog.Builder(this);
+        }
         dialog.setTitle(this.title);
-        dialog.setMessage(R.string.message_autoCheck_dialog);
+        dialog.setMessage(message);
         dialog.setCancelable(false);
         dialog.setPositiveButton(R.string.open_autoCheck_dialog, new DialogInterface.OnClickListener() {
             @Override
@@ -768,7 +877,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.setNegativeButton(R.string.close_autoCheck_dialog, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                save_editor.putBoolean("autoCheckNeverReminder", false).apply();
+                save_editor.putBoolean("autoCheck", false).apply();
             }
         });
         dialog.show();
@@ -777,9 +886,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //撤销所有再次确认提示对话框
     public void isRevokeAllNotification() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_isRevokeAllNotification_dialog));
+        AlertDialog.Builder dialog;
+        if (recover_pre_v.getBoolean("1", false)) {
+            message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_isRevokeAllNotification_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
+        } else {
+            dialog = new AlertDialog.Builder(this);
+        }
         dialog.setTitle(this.title);
-        dialog.setMessage(R.string.message_isRevokeAllNotification_dialog);
+        dialog.setMessage(message);
         dialog.setCancelable(false);
         dialog.setPositiveButton(R.string.enter_dialog, new DialogInterface.OnClickListener() {
             @Override
@@ -789,6 +905,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         dialog.setNegativeButton(R.string.negative_dialog, null);
         dialog.show();
+    }
+
+
+    //开机检测
+    public void bootCompleted() {
+        if (recover_pre.getBoolean("bootCompleted", false)) {
+            SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_bootCompleted_dialog));
+            AlertDialog.Builder dialog;
+            if (recover_pre_v.getBoolean("1", false)) {
+                message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_bootCompleted_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
+            } else {
+                dialog = new AlertDialog.Builder(this);
+            }
+            dialog.setTitle(this.title);
+            dialog.setMessage(message);
+            dialog.setCancelable(false);
+            dialog.setPositiveButton(R.string.recover_dialog, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int which) {
+                    //使用数据库存储的ID全部发送
+                    for (int i = 0; i < notifCount; ++i) {
+                        pushNotification(idArr[i], dbSelectGetTitle(idArr[i]), dbSelectGetContent(idArr[i]));
+                    }
+                    save_editor.putBoolean("bootCompleted", false).apply();
+                    finish();
+                }
+            });
+            dialog.setNeutralButton(R.string.select2recover_dialog, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    recoverDialog();
+                }
+            });
+            dialog.setNegativeButton(R.string.negative_dialog, null);
+            dialog.show();
+        }
+
     }
 
     /**

@@ -3,25 +3,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout="@layout/preference_item"
+    android:background="?attr/custom_attr_app_bg"
     android:title="@string/title_activity_setting">
 
     <PreferenceCategory
         android:layout="@layout/preference_category_widget"
-        android:title="基本设置">
+        android:title="基本设置"
+        android:background="?attr/custom_attr_app_bg">
         <CheckBoxPreference
-            android:key="dsdds"
+            android:id="@+id/changeTheme_setting"
+            android:key="1"
             android:layout="@layout/preference_item"
-            android:summary="仅在Wi-Fi环境下才自动加载图片"
-            android:title="省流量模式"
+            android:summary="@string/changeTheme_summary_setting"
+            android:title="@string/changeTheme_title_setting"
+            android:textColor="@color/teal"
             android:widgetLayout="@layout/switch_layout" />
 
         <CheckBoxPreference
-            android:key="dsds"
+            android:id="@+id/bootCompleted_setting"
+            android:key="2"
             android:layout="@layout/preference_item"
-            android:summary="向客户端推送热点新闻"
-            android:title="接收推送通知"
+            android:summary="@string/bootCompleted_summary_setting"
+            android:title="@string/bootCompleted_title_setting"
             android:widgetLayout="@layout/switch_layout" />
         <Preference
+            android:key="3"
             android:layout="@layout/preference_item"
             android:summary="删除已缓存的文章内容及图片"
             android:title="清空缓存" />

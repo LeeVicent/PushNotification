@@ -22,6 +22,11 @@
         android:title="@string/recoverByHand_menu">
     </item>
     <item
+        android:id="@+id/changeTheme"
+        android:actionLayout="@layout/activity_main"
+        android:title="@string/changeTheme_menu">
+    </item>
+    <item
         android:id="@+id/setting"
         android:actionLayout="@layout/activity_main"
         android:title="@string/setting_menu">

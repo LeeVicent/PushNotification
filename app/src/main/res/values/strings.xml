@@ -2,8 +2,6 @@
     //主界面
     <string name="app_name">推送通知</string>
     <string name="app_version">推送通知 V1.0</string>
-    <string name="add_new_title">推送通知主界面入口</string>
-    <string name="add_new_content">点击添加新通知</string>
     <string name="title_hint">输入标题</string>
     <string name="content_hint">输入内容</string>
     <string name="title">标题</string>
@@ -22,6 +20,7 @@
         手动恢复仅适用于自动检测失败的情况下使用，可查看所有未正常撤回通知（包括现在位于状态栏的）。此操作将会读取本地数据库，未选中的将会删除，选中的将会推送。\n\n请确认当前通知栏内没有已推送通知，否则可能会进行覆盖。
     </string>
     <string name="message_autoCheck_dialog">由于国产Rom对于后台任务清理的程度不同，有的会清理App所在进程，包括注册进系统的通知。勾选此项后，请尝试使用任务管理器清理一次后台，若通知还在，请关闭此选项。\n\n当然，最好的方案是锁住此App，并移出省电优化名单。</string>
+    <string name="message_bootCompleted_dialog">检测到关机前有通知未撤回通知，是否恢复？</string>
     <string name="message_isRevokeAllNotification_dialog">请再次确认，此操作不可逆！</string>
     <string name="messageBefore_dialog">原文本</string>
     <string name="messageAfter_dialog">修改为</string>
@@ -49,7 +48,7 @@
     <string name="revoke_egg1">别瞎球撤回啦，还没推送呢！(ﾉﾟ∀ﾟ)ﾉ </string>
     <string name="revoke_egg2">要啥自行车啊！</string>
     <string name="revoke_egg3">送你一顶原谅帽，带好了啊</string>
-    <string name="revoke_never_egg"></string>
+    <string name="revoke_never_egg">ds</string>
 
     //setError
     <string name="error_et">还是写点什么吧</string>
@@ -63,10 +62,19 @@
     <string name="revokeAll_menu">撤销所有通知</string>
     <string name="minimalistModel_menu">极简模式</string>
     <string name="setting_menu">设置</string>
+    <string name="changeTheme_menu">切换主题</string>
     <string name="recoverByHand_menu">手动恢复</string>
     <string name="autoCheck_menu">自动检测</string>
     <string name="title_activity_settings">Settings</string>
 
     <string name="title_activity_setting">设置</string>
+
+
+    //preference
+    <string name="changeTheme_title_setting">切换主题</string>
+    <string name="changeTheme_summary_setting">切换日间/夜间皮肤</string>
+    <string name="bootCompleted_title_setting">开机自启</string>
+    <string name="bootCompleted_summary_setting">请确认给予自启动权限</string>
+
 
 </resources>

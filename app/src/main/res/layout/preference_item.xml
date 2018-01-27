@@ -5,6 +5,7 @@
     android:gravity="center_vertical"
     android:minHeight="?android:listPreferredItemHeight"
     android:orientation="horizontal"
+    android:background="?attr/custom_attr_app_bg"
     android:padding="16dp">
 
     <RelativeLayout
@@ -20,6 +21,7 @@
             android:fadingEdge="horizontal"
             android:singleLine="true"
             android:text="title"
+            android:textColor="?attr/preference_category_title"
             android:textSize="16sp" />
 
         <TextView

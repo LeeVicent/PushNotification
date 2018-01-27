@@ -28,7 +28,8 @@
         android:layout_width="240dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="20dp"
+        android:textColorHint="?attr/attr_textHint">
 
         <AutoCompleteTextView
             android:id="@+id/title_auto"
@@ -36,9 +37,10 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:hint="@string/title_hint"
-            android:textSize="20sp"
             android:maxLines="1"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:textColor="?attr/attr_text"
+            android:textSize="20sp" />
     </android.support.design.widget.TextInputLayout>
 
 
@@ -47,18 +49,20 @@
         android:layout_width="240dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/title_layout">
+        android:layout_below="@id/title_layout"
+        android:textColorHint="?attr/attr_textHint">
 
         <AutoCompleteTextView
             android:id="@+id/content_auto"
             android:layout_width="240dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:scaleType="centerInside"
             android:hint="@string/content_hint"
-            android:textSize="17sp"
             android:maxLines="1"
-            android:singleLine="true" />
+            android:scaleType="centerInside"
+            android:singleLine="true"
+            android:textColor="?attr/attr_text"
+            android:textSize="17sp" />
     </android.support.design.widget.TextInputLayout>
 
     <ImageView
@@ -97,10 +101,9 @@
         android:layout_alignParentEnd="true"
         android:layout_alignBaseline="@id/revoke_tv"
         android:text="@string/push_text"
-        android:textColor="@color/posColor"
+        android:textColor="?attr/attr_icon"
         android:layout_marginBottom="22dp"
         style="@style/BtnTheme"/>
-
 
 
 </RelativeLayout>

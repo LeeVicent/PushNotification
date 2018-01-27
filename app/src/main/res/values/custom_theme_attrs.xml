@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 控制app背景色 format:颜色值、资源引用 -->
-    <attr name="custom_attr_app_bg" format="color|reference" />
+
+    <attr name="custom_attr_app_bg" format="color" />
+    <attr name="custom_attr_accent" format="color" />
+    <attr name="attr_icon" format="color" />
+    <attr name="attr_textHint" format="color" />
+    <attr name="attr_text" format="color" />
+    <attr name="preference_category_text" format="color" />
+    <attr name="actionBar_bg" format="color"/>
+    <attr name="preference_category_title" format="color" />
 </resources>
