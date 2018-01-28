@@ -8,42 +8,61 @@
 
     <PreferenceCategory
         android:layout="@layout/preference_category_widget"
-        android:title="基本设置"
+        android:title="@string/basicSetting_setting"
         android:background="?attr/custom_attr_app_bg">
         <CheckBoxPreference
             android:id="@+id/changeTheme_setting"
-            android:key="1"
+            android:key="changeTheme_setting"
             android:layout="@layout/preference_item"
-            android:summary="@string/changeTheme_summary_setting"
             android:title="@string/changeTheme_title_setting"
+            android:summary="@string/changeTheme_summary_setting"
             android:textColor="@color/teal"
             android:widgetLayout="@layout/switch_layout" />
 
         <CheckBoxPreference
             android:id="@+id/bootCompleted_setting"
-            android:key="2"
+            android:key="bootCompleted_setting"
             android:layout="@layout/preference_item"
-            android:summary="@string/bootCompleted_summary_setting"
             android:title="@string/bootCompleted_title_setting"
+            android:summary="@string/bootCompleted_summary_setting"
             android:widgetLayout="@layout/switch_layout" />
-        <Preference
-            android:key="3"
+        <CheckBoxPreference
+            android:id="@+id/actionBar_setting"
+            android:key="actionBar_setting"
             android:layout="@layout/preference_item"
-            android:summary="删除已缓存的文章内容及图片"
-            android:title="清空缓存" />
+            android:title="@string/actionBar_title_setting"
+            android:summary="@string/actionBar_summary_setting"
+            android:widgetLayout="@layout/switch_layout" />
+
     </PreferenceCategory>
 
     <PreferenceCategory
         android:layout="@layout/preference_category_widget"
-        android:title="其他说明">
+        android:title="@string/moreSetting_setting">
+        <Preference
+            android:key="selfDefine"
+            android:layout="@layout/preference_item"
+            android:title="@string/selfDefine_title_setting"
+            android:summary="@string/selfDefine_summary_setting"/>
         <Preference
             android:layout="@layout/preference_item"
-            android:summary="V 1.0"
-            android:title="当前版本" />
+            android:title="@string/notifBarEntrance_title_setting"
+            android:summary="@string/notifBarEntrance_summary_setting" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:layout="@layout/preference_category_widget"
+        android:title="@string/about_setting"
+        android:background="?attr/custom_attr_app_bg">
         <Preference
             android:layout="@layout/preference_item"
-            android:summary="博客：http://blog.csdn.net/never_cxb"
-            android:title="TomChen" />
+            android:title="@string/currentVersion_title_setting"
+            android:summary="@string/currentVersion_summary_setting" />
+        <Preference
+            android:layout="@layout/preference_item"
+            android:title="@string/author_title_setting"
+            android:summary="@string/author_summary_setting" />
     </PreferenceCategory>
 
 </PreferenceScreen>

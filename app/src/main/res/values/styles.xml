@@ -21,6 +21,7 @@
 
     //其他窗体样式，常规
     <style name="OtherActivityTheme" parent="@style/Base.Theme.AppCompat.Light">
+        <item name="colorAccent">?attr/custom_attr_accent</item>
         <item name="actionBarTheme">@style/windowTitleBackgroundStyle</item>
     </style>
     <style name="windowTitleBackgroundStyle">
@@ -35,6 +36,7 @@
         <item name="attr_icon">@color/posColor</item>
         <item name="attr_textHint">@color/gery</item>
         <item name="attr_text">@color/black</item>
+
     </style>
 
     //夜间模式  MainActivityTheme
@@ -50,14 +52,16 @@
 
     //日间模式  OtherActivityTheme
     <style name="OtherActivityTheme.Day" parent="OtherActivityTheme">
+        <item name="custom_attr_accent">@color/posColor</item>
         <item name="preference_category_text">@color/posColor</item>
         <item name="custom_attr_app_bg">@color/white</item>
-        <item name="actionBar_bg">@color/white</item>
+        <item name="actionBar_bg">@color/light_grey1</item>
         <item name="preference_category_title">@color/night_back</item>
     </style>
 
     //夜间模式  OtherActivityTheme
     <style name="OtherActivityTheme.Night" parent="OtherActivityTheme">
+        <item name="custom_attr_accent">@color/teal</item>
         <item name="preference_category_text">@color/posColor</item>
         <item name="custom_attr_app_bg">@color/night_back</item>
         <item name="actionBar_bg">@color/grey_2</item>
@@ -75,10 +79,9 @@
     </style>
 
 
-
     //AlertDialog 夜间模式（白天就使用默认的好了）
-    <style name="AlertDialog">
-        <item name="android:windowNoTitle">true</item>
+    //如果白天使用默认样式的话，就和自定义背景后的宽度不一样了，这点注意
+    <style name="AlertDialog" parent="@style/Base.Theme.AppCompat.Dialog">
         <item name="android:background">@color/night_back</item>
     </style>
 

@@ -1,6 +1,7 @@
 package com.vicent.pushnotification.ui.activity;
 
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Notification;
@@ -12,16 +13,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.LightingColorFilter;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -70,11 +75,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isPushed = false;  //断言是否已通知，可用于标记当前Activity状态
     private String title_text;
     private String content_text;
-    public static final int WAIT_SERVICE_START = 1;  //等待主服务启动（多线程）
-    public static final int COUNT_DOWN = 5;   //倒计时
-    public static final int TIMING = 6;    //定时
 
-/*    private int[] Postion = new int[2];   //保存“撤销”按钮移动后相对父控件位置，用于动态加载布局*/
     public static SharedPreferences.Editor save_editor;   //SharedPreferences保存
     public static SharedPreferences recover_pre;  //SharedPreferences恢复
     public static SharedPreferences.Editor save_editor_v;
@@ -94,7 +95,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Handler handler;
 
     public static MainActivity instance = null;   //用于刷新
-    public static MainActivity temp = new MainActivity();
+
+    //多线程标记
+    public static final int WAIT_SERVICE_START = 1;  //等待主服务启动（多线程）
+    public static final int COUNT_DOWN = 5;   //倒计时
+    public static final int TIMING = 6;    //定时
+
+    //图标标记
+    public static final int IC_FAVOURITE = 10;
+    public static final int IC_VISIBILITY_OFF = 11;
+    public static final int IC_ALL_INCLUSIVE = 12;
+    public static final int IC_CLEAR_ALL = 13;
+    public static final int IC_BUILD = 14;
+    public static final int IC_BRIGHTNESS_6 = 15;
+    public static final int IC_SETTINGS = 16;
+    public static final int IC_POWER_SETTINGS_NEW = 17;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recover_pre = getSharedPreferences("data", MODE_PRIVATE);
         recover_pre_v = getSharedPreferences("com.vicent.pushnotification_preferences", MODE_PRIVATE);
 
-        if (recover_pre_v.getBoolean("1", false)) {
+        if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
               setTheme(R.style.MainActivityTheme_Night);  //主题设定必须位于setContentView()之前调用
         }
         setContentView(R.layout.activity_main);
@@ -125,6 +140,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         isInterrupt();
 
         bootCompleted();
+        selfDefineIcon();
         Log.i(this.getClass().getName(), "MainActivity 初始化已完成");
 
     }
@@ -181,6 +197,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         alarm_iv = (ImageView) findViewById(R.id.alarm_iv);
         push_tv = (TextView) findViewById(R.id.push_tv);
         mainLayout = (RelativeLayout)findViewById(R.id.mainLayout);
+
         //至于为什么增加一个按钮，，，，，，
         if (recover_pre.getBoolean("minimalistModel", false)) {
             alarm_iv.setVisibility(View.GONE);
@@ -223,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             popup.getMenu().findItem(R.id.minimalistModel).setChecked(true);
             popup.getMenu().findItem(R.id.changeTheme).setVisible(false);
         }
-        if (recover_pre_v.getBoolean("1", false)) {
+        if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
             SpannableStringBuilder autoCheck = new SpannableStringBuilder(getString(R.string.autoCheck_menu));
             SpannableStringBuilder recoverByHand = new SpannableStringBuilder(getString(R.string.recoverByHand_menu));
             SpannableStringBuilder setting = new SpannableStringBuilder(getString(R.string.setting_menu));
@@ -252,11 +269,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public boolean onMenuItemClick(MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
                     case R.id.changeTheme:
-                        if (recover_pre_v.getBoolean("1", false)) {
-                            save_editor_v.putBoolean("1", false).apply();
+                        if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
+                            save_editor_v.putBoolean("changeTheme_setting", false).apply();
                             recreate();
                         } else {
-                            save_editor_v.putBoolean("1", true).apply();
+                            save_editor_v.putBoolean("changeTheme_setting", true).apply();
                             recreate();
                         }
                         break;
@@ -268,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             isRecoverByHandDialog();
                         }
                         else {
-                            recoverByHandDialog();
+                            recoverDialog();
                         }
                         break;
                     case R.id.setting:
@@ -307,7 +324,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()) {
             //闹钟按钮响应事件
             case R.id.alarm_iv:
-                setTheme(R.style.MainActivityTheme_Day);
+                /*if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+
+                }else {
+                    mainLayout.setBackground(Drawable.createFromPath("/storage/emulated/0/DCIM/Camera/IMG_20180123_154535.jpg"));
+                }*/
+                selfDefine();
                 break;
 
             //撤销按钮响应事件
@@ -379,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         NotificationCompat.Builder notificationBulider = new NotificationCompat.Builder(this, null)
                 .setContentTitle(title_text)
                 .setContentText(content_text)
-                .setSmallIcon(R.mipmap.polls_tap)
+                .setSmallIcon(R.mipmap.polls_tap)   //小图标是必须设立的
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.polls_tap))
                 .setContentIntent(pi)
                 .setOngoing(true)
@@ -582,7 +605,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
         AlertDialog.Builder dialog;
-        if (recover_pre_v.getBoolean("1", false)) {
+        if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
             message_dialog.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             messageInput_dialog.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.messageInput_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.title).length() + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -640,7 +663,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         AlertDialog.Builder dialog;
-        if (recover_pre_v.getBoolean("1", false)) {
+        if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
             messageNotPushed_dialog.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.messageNotPushed_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.title).length() + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             content.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.content).length() + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -651,7 +674,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         messageNotPushed_dialog.append(messageBefore_dialog); messageNotPushed_dialog.append(title); messageNotPushed_dialog.append(title_original);
         messageNotPushed_dialog.append(content); messageNotPushed_dialog.append(content_original); messageNotPushed_dialog.append(messageAfter_dialog);
-        if (recover_pre_v.getBoolean("1", false)) {
+        if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
             //虽然一样，也得应用两次
             title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.title).length() + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             content.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.content).length() + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -677,7 +700,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_isRecover_dialog));
         AlertDialog.Builder dialog;
-        if (recover_pre_v.getBoolean("1", false)) {
+        if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
             message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_isRecover_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
         } else {
@@ -713,109 +736,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bools = new boolean[notifCount];
         items = new SpannableStringBuilder[notifCount];
 
-        for (int i = 0; i < notifCount; ++i) {
-            bools[i] = false;
-            SpannableStringBuilder title = new SpannableStringBuilder(dbSelectGetTitle(idArr[i]) + "\n");
-            SpannableStringBuilder content = new SpannableStringBuilder(dbSelectGetContent(idArr[i]) + "\n");
-            title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.teal)), 0, dbSelectGetTitle(idArr[i]).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            content.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, dbSelectGetContent(idArr[i]).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            content.setSpan(new RelativeSizeSpan(0.8f), 0, dbSelectGetContent(idArr[i]).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            items[i] = title.append(content);
-        }
-
-        AlertDialog.Builder dialog;
-        if (recover_pre_v.getBoolean("1", false)) {
-            dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
-        } else {
-            dialog = new AlertDialog.Builder(this);
-        }
-        dialog.setTitle(R.string.needToRecover_dialog);
-        dialog.setMultiChoiceItems(items, bools,new DialogInterface.OnMultiChoiceClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                bools[which] = isChecked;   //标记选中
-            }
-        });
-        dialog.setCancelable(false);
-        dialog.setPositiveButton(R.string.push_dialog, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int which) {
-                for (int i = 0; i < items.length; i++) {
-                    if (bools[i]) {
-                        //逻辑
-                        pushNotification(idArr[i], dbSelectGetTitle(idArr[i]), dbSelectGetContent(idArr[i]));
-                    } else {
-                        notifCount--;   //未推送，减去
-                        dbDelete(idArr[i]);  //并从数据库删除
-                    }
-                }
-                //至于ID增长问题，继续使用SharedPreference读取出的最大值自增
-                if (notifCount == 0) {   //全部都没选的话
-                    notifID = 0;
-                }
-                save_editor.putInt("notifCount", notifCount).apply();
-                save_editor.putBoolean("interrupt", false).apply();
-                finish();
-            }
-        });
-        dialog.setNegativeButton(R.string.negative_dialog, null);
-        dialog.show();
-    }
-
-
-    //手动恢复提示对话框
-    public void isRecoverByHandDialog() {
-        SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_recoverByHand_dialog));
-        AlertDialog.Builder dialog;
-        if (recover_pre_v.getBoolean("1", false)) {
-            message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_recoverByHand_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
-        } else {
-            dialog = new AlertDialog.Builder(this);
-        }
-        dialog.setTitle(this.title);
-        dialog.setMessage(message);
-        dialog.setCancelable(false);
-        dialog.setPositiveButton(R.string.select2recover_dialog, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int which) {
-                recoverByHandDialog();
-            }
-        });
-        dialog.setNeutralButton(R.string.neverReminder_dialog, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                save_editor.putBoolean("neverReminder", false).apply();
-            }
-        });
-        dialog.setNegativeButton(R.string.negative_dialog, null);
-        dialog.show();
-    }
-
-
-    //手动选择恢复对话框    //这段代码没法复用,因为取消按键
-    public void recoverByHandDialog() {
-
-        bools = new boolean[notifCount];
-        items = new SpannableStringBuilder[notifCount];
+        SpannableStringBuilder titleDialog = new SpannableStringBuilder(getString(R.string.title_needToRecover_dialog));
+        titleDialog.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.green)), 0, getString(R.string.title_needToRecover_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         for (int i = 0; i < notifCount; ++i) {
             bools[i] = false;
             SpannableStringBuilder title = new SpannableStringBuilder(dbSelectGetTitle(idArr[i]) + "\n");
             SpannableStringBuilder content = new SpannableStringBuilder(dbSelectGetContent(idArr[i]) + "\n");
             title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.teal)), 0, dbSelectGetTitle(idArr[i]).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            content.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, dbSelectGetContent(idArr[i]).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            content.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.gery)), 0, dbSelectGetContent(idArr[i]).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             content.setSpan(new RelativeSizeSpan(0.8f), 0, dbSelectGetContent(idArr[i]).length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             items[i] = title.append(content);
         }
 
         AlertDialog.Builder dialog;
-        if (recover_pre_v.getBoolean("1", false)) {
+        if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
             dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
         } else {
             dialog = new AlertDialog.Builder(this);
         }
-        dialog.setTitle(R.string.needToRecover_dialog);
+        dialog.setTitle(titleDialog);
         dialog.setMultiChoiceItems(items, bools, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
@@ -845,15 +785,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
         dialog.setNegativeButton(R.string.negative_dialog, null);
+        dialog.show();    }
+
+
+    //手动恢复提示对话框
+    public void isRecoverByHandDialog() {
+        SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_recoverByHand_dialog));
+        AlertDialog.Builder dialog;
+        if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
+            message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_recoverByHand_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
+        } else {
+            dialog = new AlertDialog.Builder(this);
+        }
+        dialog.setTitle(this.title);
+        dialog.setMessage(message);
+        dialog.setCancelable(false);
+        dialog.setPositiveButton(R.string.select2recover_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                recoverDialog();
+            }
+        });
+        dialog.setNeutralButton(R.string.neverReminder_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                save_editor.putBoolean("neverReminder", false).apply();
+            }
+        });
+        dialog.setNegativeButton(R.string.negative_dialog, null);
         dialog.show();
     }
+
+
 
 
     //自动检测提示对话框
     public void autoCheckDialog() {
         SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_autoCheck_dialog));
         AlertDialog.Builder dialog;
-        if (recover_pre_v.getBoolean("1", false)) {
+        if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
             message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_autoCheck_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
         } else {
@@ -888,7 +859,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void isRevokeAllNotification() {
         SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_isRevokeAllNotification_dialog));
         AlertDialog.Builder dialog;
-        if (recover_pre_v.getBoolean("1", false)) {
+        if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
             message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_isRevokeAllNotification_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
         } else {
@@ -908,12 +879,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+
     //开机检测
     public void bootCompleted() {
         if (recover_pre.getBoolean("bootCompleted", false)) {
             SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_bootCompleted_dialog));
             AlertDialog.Builder dialog;
-            if (recover_pre_v.getBoolean("1", false)) {
+            if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
                 message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_bootCompleted_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
             } else {
@@ -1093,6 +1065,125 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    //自定义按钮对话框
+    public void selfDefineDialog() {
+        SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_SelfDefineIntro_dialog));
+        AlertDialog.Builder dialog;
+        if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
+            message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_SelfDefineIntro_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
+        } else {
+            dialog = new AlertDialog.Builder(this);
+        }
+        dialog.setTitle(R.string.title_SelfDefineIntro_dialog);
+        dialog.setMessage(message);
+        dialog.setCancelable(false);
+        dialog.setPositiveButton(R.string.enter_dialog, null);
+        dialog.show();
+    }
+
+
+    public void selfDefineIcon() {
+        switch (recover_pre.getInt("selfDefine", 10)) {
+            case IC_FAVOURITE:
+                alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_favorite));
+                break;
+            case IC_VISIBILITY_OFF:
+                alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_visibility_off));
+                break;
+            case IC_ALL_INCLUSIVE:
+                alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_all_inclusive));
+                break;
+            case IC_CLEAR_ALL:
+                alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_clear_all));
+                break;
+            case IC_BUILD:
+                alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_build));
+                break;
+            case IC_BRIGHTNESS_6:
+                alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_brightness_6));
+                break;
+            case IC_SETTINGS:
+                alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_settings));
+                break;
+            case IC_POWER_SETTINGS_NEW:
+                alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_power_settings_new));
+                break;
+
+
+
+        }
+    }
+
+    public void selfDefine() {
+        switch (recover_pre.getInt("selfDefine", 10)) {
+            case IC_FAVOURITE:
+                selfDefineDialog();
+                break;
+
+            case IC_VISIBILITY_OFF:
+                if (recover_pre.getBoolean("minimalistModel", false)) {
+                    MinimalistModel(false);
+                } else {
+                    MinimalistModel(true);
+                }
+                break;
+
+            case IC_ALL_INCLUSIVE:
+                if (recover_pre.getBoolean("autoCheckNeverReminder", true)) {  //如果提示
+                    autoCheckDialog();
+                } else {   //如果不再提示
+                    if (recover_pre.getBoolean("autoCheck", false)) {
+                        alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_all_inclusive_close));
+                        save_editor.putBoolean("autoCheck", false).apply();
+                    } else {
+                        alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_all_inclusive));
+                        save_editor.putBoolean("autoCheck", true).apply();
+                    }
+                }
+                break;
+
+            case IC_CLEAR_ALL:
+                isRevokeAllNotification();
+                break;
+
+            case IC_BUILD:
+                if (recover_pre.getBoolean("neverReminder", true)) {
+                    isRecoverByHandDialog();
+                }
+                else {
+                    recoverDialog();
+                }
+                break;
+
+            case IC_BRIGHTNESS_6:
+                if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
+                    save_editor_v.putBoolean("changeTheme_setting", false).apply();
+                    recreate();
+                } else {
+                    save_editor_v.putBoolean("changeTheme_setting", true).apply();
+                    recreate();
+                }
+                break;
+
+            case IC_SETTINGS:
+                Intent intent = new Intent(MainActivity.this, SettingActivity.class);
+                startActivity(intent);
+                break;
+
+            case IC_POWER_SETTINGS_NEW:
+                if (recover_pre_v.getBoolean("bootCompleted_setting", false)) {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_power_settings_new_close));
+                    save_editor_v.putBoolean("bootCompleted_setting", false).apply();
+                } else {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_power_settings_new));
+                    save_editor_v.putBoolean("bootCompleted_setting", true).apply();
+                }
+
+                break;
+
+        }
+    }
 
 
 
