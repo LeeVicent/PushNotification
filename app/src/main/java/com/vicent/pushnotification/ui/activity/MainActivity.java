@@ -1,7 +1,6 @@
 package com.vicent.pushnotification.ui.activity;
 
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Notification;
@@ -13,21 +12,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.LightingColorFilter;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -49,10 +44,10 @@ import android.graphics.drawable.Drawable;
 import android.widget.Toast;
 
 import com.vicent.pushnotification.backstage.MainService;
-import com.vicent.pushnotification.ui.fragment.SettingFragment;
-import com.vicent.pushnotification.unti.DatabaseHelper;
+import com.vicent.pushnotification.util.DatabaseHelper;
 
 import com.vicent.pushnotification.R;
+import com.vicent.pushnotification.util.ImageTool;
 
 import java.util.Calendar;
 import java.util.Timer;
@@ -110,6 +105,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int IC_BRIGHTNESS_6 = 15;
     public static final int IC_SETTINGS = 16;
     public static final int IC_POWER_SETTINGS_NEW = 17;
+    public static final int IC_NOTE_ADD = 18;
+    public static final int IC_PHOTO = 19;
+    public static final int IC_PHOTO_ALBUM = 20;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,7 +127,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         onNewIntent(getIntent());
         dbCreate();
 
-
         //恢复notifCount计数
         notifCount = recover_pre.getInt("notifCount", 0);
         notifID = recover_pre.getInt("notifID", 0);
@@ -141,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         bootCompleted();
         selfDefineIcon();
+        setBg();
         Log.i(this.getClass().getName(), "MainActivity 初始化已完成");
 
     }
@@ -449,7 +447,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //清空数据库表Notification
         db.delete("Notification", "id < ?", new String[] { "100" });   //还有人能用100条通知？
-        Toast.makeText(this, getString(R.string.revokeAllNotification), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.revokeAllNotification_toast), Toast.LENGTH_SHORT).show();
     }
 
     //断言EditText为空并取值
@@ -882,39 +880,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //开机检测
     public void bootCompleted() {
-        if (recover_pre.getBoolean("bootCompleted", false)) {
-            SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_bootCompleted_dialog));
-            AlertDialog.Builder dialog;
-            if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
-                message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_bootCompleted_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
-            } else {
-                dialog = new AlertDialog.Builder(this);
-            }
-            dialog.setTitle(this.title);
-            dialog.setMessage(message);
-            dialog.setCancelable(false);
-            dialog.setPositiveButton(R.string.recover_dialog, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int which) {
-                    //使用数据库存储的ID全部发送
-                    for (int i = 0; i < notifCount; ++i) {
-                        pushNotification(idArr[i], dbSelectGetTitle(idArr[i]), dbSelectGetContent(idArr[i]));
-                    }
-                    save_editor.putBoolean("bootCompleted", false).apply();
-                    finish();
-                }
-            });
-            dialog.setNeutralButton(R.string.select2recover_dialog, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    recoverDialog();
-                }
-            });
-            dialog.setNegativeButton(R.string.negative_dialog, null);
-            dialog.show();
-        }
+        if (recover_pre.getBoolean("autoCheck", false)) {
 
+        } else {   //自动检测关闭的情况下使用
+            if (recover_pre.getBoolean("bootCompleted", false)) {
+                SpannableStringBuilder message = new SpannableStringBuilder(getString(R.string.message_bootCompleted_dialog));
+                AlertDialog.Builder dialog;
+                if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
+                    message.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.light_gery)), 0, getString(R.string.message_bootCompleted_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    dialog = new AlertDialog.Builder(this, R.style.AlertDialog);
+                } else {
+                    dialog = new AlertDialog.Builder(this);
+                }
+                dialog.setTitle(this.title);
+                dialog.setMessage(message);
+                dialog.setCancelable(false);
+                dialog.setPositiveButton(R.string.recover_dialog, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        //使用数据库存储的ID全部发送
+                        for (int i = 0; i < notifCount; ++i) {
+                            pushNotification(idArr[i], dbSelectGetTitle(idArr[i]), dbSelectGetContent(idArr[i]));
+                        }
+                        save_editor.putBoolean("bootCompleted", false).apply();
+                        finish();
+                    }
+                });
+                dialog.setNeutralButton(R.string.select2recover_dialog, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        recoverDialog();
+                    }
+                });
+                dialog.setNegativeButton(R.string.negative_dialog, null);
+                dialog.show();
+            }
+        }
     }
 
     /**
@@ -933,6 +934,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 switch (message.what) {
                     //异常终止检测
                     case WAIT_SERVICE_START:
+                        if (recover_pre_v.getBoolean("notifBarEntrance", false)) {
+                            notifBarEntrance();
+                        }
+                        //只测量一次
+                        if (recover_pre.getBoolean("firstStart", true)) {
+                            save_editor.putInt("mainLayoutHeight", mainLayout.getHeight()).apply();
+                            save_editor.putInt("mainLayoutWidth", mainLayout.getWidth()).apply();
+                            Log.i(this.getClass().getName(), Integer.toString(mainLayout.getHeight()));
+                            Log.i(this.getClass().getName(), Integer.toString(mainLayout.getWidth()));
+                        }
+                        save_editor.putBoolean("firstStart", false).apply();
                         //极简模式，动态修改布局  //setTop这类函数只能onCreate()执行完成后生效
                         if (recover_pre.getBoolean("interrupt", true)) {  //异常终止
                             if (recover_pre.getBoolean("autoCheck", false)){  //自动检测开启
@@ -955,7 +967,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         message.what = WAIT_SERVICE_START;
                         handler.sendMessage(message);
                     }
-                }, 100);
+                }, 1000);
             }
         }).start();
     }
@@ -1092,7 +1104,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_visibility_off));
                 break;
             case IC_ALL_INCLUSIVE:
-                alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_all_inclusive));
+                if (recover_pre.getBoolean("autoCheck", false)) {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_all_inclusive));
+                } else {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_all_inclusive_close));
+                }
                 break;
             case IC_CLEAR_ALL:
                 alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_clear_all));
@@ -1107,12 +1123,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_settings));
                 break;
             case IC_POWER_SETTINGS_NEW:
-                alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_power_settings_new));
+                if (recover_pre_v.getBoolean("bootCompleted_setting", false)) {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_power_settings_new));
+                } else {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_power_settings_new_close));
+                }
                 break;
 
+            case IC_NOTE_ADD:
+                if (recover_pre_v.getBoolean("notifBarEntrance", false)) {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_note_add));
+                } else {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_note_add_close));
+                }
+                break;
 
+            case IC_PHOTO:
+                if (recover_pre_v.getBoolean("mainActivityBg", false)) {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_photo));
+                } else {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_photo_close));
+                }
+                break;
 
-        }
+            case IC_PHOTO_ALBUM:
+                if (recover_pre_v.getBoolean("mainActivityBg", false)) {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_photo_album));
+                } else {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_photo_album_close));
+                }        }
     }
 
     public void selfDefine() {
@@ -1180,11 +1219,71 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     save_editor_v.putBoolean("bootCompleted_setting", true).apply();
                 }
 
+            case IC_NOTE_ADD:
+                if (recover_pre_v.getBoolean("notifBarEntrance", false)) {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_note_add_close));
+                    NotificationManagerCompat manager = NotificationManagerCompat.from(this);
+                    manager.cancel(1000);
+                    save_editor_v.putBoolean("notifBarEntrance", false).apply();
+                } else {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_note_add));
+                    notifBarEntrance();
+                    save_editor_v.putBoolean("notifBarEntrance", true).apply();
+                }
+                break;
+
+            case IC_PHOTO:
+                if (recover_pre_v.getBoolean("mainActivityBg", false)) {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_photo_close));
+                    mainLayout.setBackground(null);
+                    save_editor_v.putBoolean("mainActivityBg", false).apply();
+                } else {
+                    alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_photo));
+                    mainLayout.setBackground(Drawable.createFromPath(Environment.getExternalStorageDirectory() + "/APN/custom.jpg"));
+                    save_editor_v.putBoolean("mainActivityBg", true).apply();
+                }
+                break;
+
+            case IC_PHOTO_ALBUM:
+                if (recover_pre_v.getBoolean("mainActivityBg", false)) {
+                    startActivity(new Intent(this, ImageTool.class).putExtra("op", ImageTool.SELECT_PHOTO));
+                } else {
+                    Toast.makeText(this, R.string.openSettingFirst_toast, Toast.LENGTH_SHORT).show();
+                }
                 break;
 
         }
     }
 
+    /**
+     *  主界面背景设置
+     */
+    public void setBg() {
+        if (recover_pre_v.getBoolean("mainActivityBg",false)) {
+            mainLayout.setBackground(Drawable.createFromPath(Environment.getExternalStorageDirectory() + "/APN/custom.jpg"));
+        }
+    }
+
+    /**
+     *  常驻通知栏
+     */
+    public void notifBarEntrance () {
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(this, 1000, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationManagerCompat manager = NotificationManagerCompat.from(this);
+        NotificationCompat.Builder notificationBulider = new NotificationCompat.Builder(this, null)
+                .setContentTitle(getString(R.string.notifBarEntrance_title))
+                .setContentText(getString(R.string.notifBarEntrance_content))
+                .setSmallIcon(R.mipmap.polls_tap)   //小图标是必须设立的
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_add))
+                .setContentIntent(pi)
+                .setOngoing(true)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(getString(R.string.notifBarEntrance_content)))
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+        Notification notifications = notificationBulider.build();   //这里有待验证
+        manager.notify(1000,notifications);
+    }
 
 
     public void egg() {

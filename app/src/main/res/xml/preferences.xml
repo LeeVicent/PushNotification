@@ -11,43 +11,66 @@
         android:title="@string/basicSetting_setting"
         android:background="?attr/custom_attr_app_bg">
         <CheckBoxPreference
-            android:id="@+id/changeTheme_setting"
-            android:key="changeTheme_setting"
-            android:layout="@layout/preference_item"
-            android:title="@string/changeTheme_title_setting"
-            android:summary="@string/changeTheme_summary_setting"
-            android:textColor="@color/teal"
-            android:widgetLayout="@layout/switch_layout" />
-
-        <CheckBoxPreference
-            android:id="@+id/bootCompleted_setting"
             android:key="bootCompleted_setting"
             android:layout="@layout/preference_item"
             android:title="@string/bootCompleted_title_setting"
             android:summary="@string/bootCompleted_summary_setting"
             android:widgetLayout="@layout/switch_layout" />
         <CheckBoxPreference
-            android:id="@+id/actionBar_setting"
+            android:key="changeTheme_setting"
+            android:layout="@layout/preference_item"
+            android:title="@string/changeTheme_title_setting"
+            android:summary="@string/changeTheme_summary_setting"
+            android:textColor="@color/teal"
+            android:widgetLayout="@layout/switch_layout" />
+        <CheckBoxPreference
             android:key="actionBar_setting"
             android:layout="@layout/preference_item"
             android:title="@string/actionBar_title_setting"
             android:summary="@string/actionBar_summary_setting"
             android:widgetLayout="@layout/switch_layout" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:layout="@layout/preference_category_widget"
-        android:title="@string/moreSetting_setting">
         <Preference
             android:key="selfDefine"
             android:layout="@layout/preference_item"
             android:title="@string/selfDefine_title_setting"
             android:summary="@string/selfDefine_summary_setting"/>
-        <Preference
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:layout="@layout/preference_category_widget"
+        android:title="@string/moreSetting_setting">
+        <CheckBoxPreference
+            android:key="notifBarEntrance"
             android:layout="@layout/preference_item"
             android:title="@string/notifBarEntrance_title_setting"
-            android:summary="@string/notifBarEntrance_summary_setting" />
+            android:summary="@string/notifBarEntrance_summary_setting"
+            android:widgetLayout="@layout/switch_layout" />
+        <CheckBoxPreference
+            android:key="noIcon"
+            android:layout="@layout/preference_item"
+            android:title="@string/noIcon_title_setting"
+            android:summary="@string/noIcon_summary_setting"
+            android:widgetLayout="@layout/switch_layout" />
+        <CheckBoxPreference
+            android:key="mainActivityBg"
+            android:layout="@layout/preference_item"
+            android:title="@string/mainActivityBg_title_setting"
+            android:summary="@string/mainActivityBg_summary_setting"
+            android:widgetLayout="@layout/switch_layout" />
+        <Preference
+            android:dependency="mainActivityBg"
+            android:shouldDisableView="true"
+            android:key="mainActivityBgSelect"
+            android:layout="@layout/preference_item"
+            android:title="@string/mainActivityBgSelect_title_setting"
+            android:summary="@string/mainActivityBgSelect_summary_setting" />
+        <Preference
+            android:shouldDisableView="true"
+            android:key="history"
+            android:layout="@layout/preference_item"
+            android:title="@string/history_title_setting"
+            android:summary="@string/history_summary_setting" />
+
 
     </PreferenceCategory>
 

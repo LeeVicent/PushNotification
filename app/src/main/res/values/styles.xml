@@ -86,6 +86,18 @@
     </style>
 
 
+    //全透明样式
+    <style name="TranslucentTheme" parent="@style/Base.Theme.AppCompat">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+
     //EditText主题
     <style name="EtTheme">
         <item name="android:textSize">16sp</item>

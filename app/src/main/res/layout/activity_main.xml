@@ -10,7 +10,6 @@
     android:orientation="vertical"
     android:background="?attr/custom_attr_app_bg"
     android:windowActionBar="false"
-
     tools:context="com.vicent.pushnotification.ui.activity.MainActivity">
 
     <ImageView

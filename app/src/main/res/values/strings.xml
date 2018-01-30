@@ -18,7 +18,7 @@
     <string name="messageNotPushed_dialog">检测到输入框存在已修改但未推送文本，确认放弃吗？</string>
     <string name="message_isRecover_dialog">检测到应用曾经异常退出, 是否恢复已推送通知？\n\n如果频繁提示，请关闭“自动检测”并将应用添加任务锁</string>
     <string name="message_recoverByHand_dialog">
-        手动恢复仅适用于自动检测失败的情况下使用，可查看所有未正常撤回通知（包括现在位于状态栏的）。此操作将会读取本地数据库，未选中的将会删除，选中的将会推送。\n\n请确认当前通知栏内没有已推送通知，否则可能会进行覆盖。
+        此操作可查看所有未正常撤回通知（包括现在位于状态栏的），将会读取本地数据库，未选中的将会删除，选中的将会推送。\n\n请确认当前通知栏内没有已推送通知，否则可能会进行覆盖。
     </string>
     <string name="message_autoCheck_dialog">由于国产Rom对于后台任务清理的程度不同，有的会清理App所在进程，包括注册进系统的通知。勾选此项后，请尝试使用任务管理器清理一次后台，若通知还在，请关闭此选项。\n\n当然，最好的方案是锁住此App，并移出省电优化名单。</string>
     <string name="message_bootCompleted_dialog">检测到关机前有未撤回通知，是否恢复？</string>
@@ -39,7 +39,7 @@
     <string name="select2recover_dialog">选择恢复</string>
     <string name="title_SelfDefine_dialog">自定义按钮列表</string>
     <string name="title_SelfDefineIntro_dialog">自定义按钮介绍</string>
-    <string name="message_SelfDefineIntro_dialog">这个按钮的功能是自定义的，可以在设置里修改为你想要的功能。\n\n其实本来这里是用来给通知加上图片的，但貌似MIUI、Flyme、EMUI、ColorOS等一众国产Rom把这个功能给去掉了，而贴近Google原生的氢OS还是支持的，所以就算了吧。#滑稽</string>
+    <string name="message_SelfDefineIntro_dialog">这个按钮的功能是自定义的，可以在设置里修改为你想要的功能。\n\n至于为啥有的不能设定\n可能因为功能使用频率太低\n可能因为需要大面积代码重构\n当然，很有可能是找不到合适的图标了#手动滑稽</string>
 
 
     //egg
@@ -52,15 +52,19 @@
     <string name="revoke_egg1">别瞎球撤回啦，还没推送呢！(ﾉﾟ∀ﾟ)ﾉ </string>
     <string name="revoke_egg2">要啥自行车啊！</string>
     <string name="revoke_egg3">送你一顶原谅帽，带好了啊</string>
-    <string name="revoke_never_egg">ds</string>
+    <string name="revoke_never_egg">111111</string>
 
     //setError
     <string name="error_et">还是写点什么吧</string>
 
 
     //Toast
-    <string name="revokeAllNotification">所有通知已撤销</string>
-
+    <string name="revokeAllNotification_toast">所有通知已撤销</string>
+    <string name="constructing_toast">正在施工..</string>
+    <string name="selectCancel_toast">取消选择</string>
+    <string name="cropCancel_toast">裁剪取消</string>
+    <string name="permissionCancel_toast">授权取消</string>
+    <string name="openSettingFirst_toast">请先在设置里开启“主界面背景”开关</string>
 
     //menu
     <string name="revokeAll_menu">撤销所有通知</string>
@@ -84,14 +88,28 @@
     <string name="actionBar_summary_setting">使状态栏颜色等同于主题</string>
     
     <string name="moreSetting_setting">更多设置</string>
-    <string name="selfDefine_title_setting">自定义按钮</string>
-    <string name="selfDefine_summary_setting">可以将此按钮设置为列表中任意功能</string>
     <string name="notifBarEntrance_title_setting">通知栏入口</string>
     <string name="notifBarEntrance_summary_setting">常驻通知栏显示快速入口</string>
+    <string name="noIcon_title_setting">隐藏通知图标</string>
+    <string name="noIcon_summary_setting">通知栏不再显示小图标</string>
+    <string name="selfDefine_title_setting">自定义按钮</string>
+    <string name="selfDefine_summary_setting">可以将此按钮设置为列表中任意功能</string>
+    <string name="mainActivityBg_title_setting">主界面背景</string>
+    <string name="mainActivityBg_summary_setting">可以使用自定义图片作为主界面背景</string>
+    <string name="mainActivityBgSelect_title_setting">选择图片</string>
+    <string name="mainActivityBgSelect_summary_setting">裁剪图片备份地址：APN/custom.jpg\n请使用裁剪框给出的比例，这是最匹配的裁剪方式</string>
+    <string name="history_title_setting">历史记录</string>
+    <string name="history_summary_setting">预留坑位，以后再填</string>
 
     <string name="about_setting">关于</string>
     <string name="currentVersion_title_setting">当前版本</string>
     <string name="currentVersion_summary_setting">V 1.0</string>
     <string name="author_title_setting">作者</string>
     <string name="author_summary_setting">北风其凉</string>
+
+
+    //other
+    <string name="selectImageMainActivity">主界面背景图片选择</string>
+    <string name="notifBarEntrance_title">通知栏入口</string>
+    <string name="notifBarEntrance_content">点击添加新的通知</string>
 </resources>

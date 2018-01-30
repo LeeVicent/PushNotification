@@ -1,4 +1,4 @@
-package com.vicent.pushnotification.unti;
+package com.vicent.pushnotification.util;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
