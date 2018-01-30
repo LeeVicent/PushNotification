@@ -11,7 +11,6 @@
     <string name="push_text">通知</string>
     <string name="define_text">默认</string>
 
-
     //Dialog
     <string name="title_dialog">注意</string>
     <string name="message_dialog">检测到输入框存在已编辑但未推送文本，确认放弃吗？</string>
@@ -40,7 +39,6 @@
     <string name="title_SelfDefine_dialog">自定义按钮列表</string>
     <string name="title_SelfDefineIntro_dialog">自定义按钮介绍</string>
     <string name="message_SelfDefineIntro_dialog">这个按钮的功能是自定义的，可以在设置里修改为你想要的功能。\n\n至于为啥有的不能设定\n可能因为功能使用频率太低\n可能因为需要大面积代码重构\n当然，很有可能是找不到合适的图标了#手动滑稽</string>
-
 
     //egg
     <string name="first_toast">别瞎球点啦！(*/ω＼*)</string>
@@ -78,7 +76,7 @@
     <string name="title_activity_setting">设置</string>
 
 
-    //preference
+    //preference_setting
     <string name="basicSetting_setting">基本设置</string>
     <string name="changeTheme_title_setting">切换主题</string>
     <string name="changeTheme_summary_setting">切换日间/夜间主题</string>
@@ -86,14 +84,17 @@
     <string name="bootCompleted_summary_setting">请确认给予自启动权限</string>
     <string name="actionBar_title_setting">沉浸式状态栏</string>
     <string name="actionBar_summary_setting">使状态栏颜色等同于主题</string>
+    <string name="selfDefine_title_setting">自定义按钮</string>
+    <string name="selfDefine_summary_setting">可以将此按钮设置为列表中任意功能</string>
     
     <string name="moreSetting_setting">更多设置</string>
     <string name="notifBarEntrance_title_setting">通知栏入口</string>
     <string name="notifBarEntrance_summary_setting">常驻通知栏显示快速入口</string>
-    <string name="noIcon_title_setting">隐藏通知图标</string>
-    <string name="noIcon_summary_setting">通知栏不再显示小图标</string>
-    <string name="selfDefine_title_setting">自定义按钮</string>
-    <string name="selfDefine_summary_setting">可以将此按钮设置为列表中任意功能</string>
+    <string name="notifOnGoing_title_setting">通知常驻</string>
+    <string name="notifOnGoing_summary_setting">开启后通知将不会被清理</string>
+    <string name="notifPriority_title_setting">通知级别</string>
+    <string name="notifPriority_summary_setting">5级最高，1级最低</string>
+
     <string name="mainActivityBg_title_setting">主界面背景</string>
     <string name="mainActivityBg_summary_setting">可以使用自定义图片作为主界面背景</string>
     <string name="mainActivityBgSelect_title_setting">选择图片</string>
@@ -103,7 +104,7 @@
 
     <string name="about_setting">关于</string>
     <string name="currentVersion_title_setting">当前版本</string>
-    <string name="currentVersion_summary_setting">V 1.0</string>
+    <string name="currentVersion_summary_setting">V 1.0 Debug Version</string>
     <string name="author_title_setting">作者</string>
     <string name="author_summary_setting">北风其凉</string>
 
@@ -112,4 +113,12 @@
     <string name="selectImageMainActivity">主界面背景图片选择</string>
     <string name="notifBarEntrance_title">通知栏入口</string>
     <string name="notifBarEntrance_content">点击添加新的通知</string>
+
+
+    //通知优先级描述
+    <string name="notif1">1</string>
+    <string name="notif2">2</string>
+    <string name="notif3">3</string>
+    <string name="notif4">4</string>
+    <string name="notif5">5</string>
 </resources>

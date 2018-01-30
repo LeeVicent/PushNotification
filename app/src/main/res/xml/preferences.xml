@@ -46,11 +46,17 @@
             android:summary="@string/notifBarEntrance_summary_setting"
             android:widgetLayout="@layout/switch_layout" />
         <CheckBoxPreference
-            android:key="noIcon"
+            android:key="notifOnGoing"
+            android:checked="true"
             android:layout="@layout/preference_item"
-            android:title="@string/noIcon_title_setting"
-            android:summary="@string/noIcon_summary_setting"
+            android:title="@string/notifOnGoing_title_setting"
+            android:summary="@string/notifOnGoing_summary_setting"
             android:widgetLayout="@layout/switch_layout" />
+        <Preference
+            android:key="notifPriority"
+            android:layout="@layout/preference_item"
+            android:title="@string/notifPriority_title_setting"
+            android:summary="@string/notifPriority_summary_setting" />
         <CheckBoxPreference
             android:key="mainActivityBg"
             android:layout="@layout/preference_item"

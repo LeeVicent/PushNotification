@@ -403,8 +403,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setSmallIcon(R.mipmap.polls_tap)   //小图标是必须设立的
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.polls_tap))
                 .setContentIntent(pi)
-                .setOngoing(true)
+                .setOngoing(recover_pre_v.getBoolean("notifOnGoing", true))
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(content_text))
+                .setPriority(recover_pre.getInt("notifPriority", 2))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
         Notification notifications = notificationBulider.build();   //这里有待验证
         manager.notify(notifID,notifications);

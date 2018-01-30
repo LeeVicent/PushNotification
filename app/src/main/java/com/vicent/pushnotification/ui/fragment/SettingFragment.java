@@ -43,7 +43,8 @@ public class SettingFragment extends PreferenceFragment {
 
     //对话框标记
     public static final int SELF_DEFINE_DIALOG = 1;
-
+    public static final int STANDARD_DIALOG = 2;
+    public static final int NOTIF_PRIORITY_DIALOG = 3;
 
     public static Activity instance = null;
     @Override
@@ -78,7 +79,7 @@ public class SettingFragment extends PreferenceFragment {
             MainActivity.instance.recreate();
         }
         if ("selfDefine".equals(preference.getKey())) {
-            dialogs(SELF_DEFINE_DIALOG);
+            dialogs(SELF_DEFINE_DIALOG, null, null);
         }
         if ("mainActivityBg".equals(preference.getKey())) {
             MainActivity.instance.recreate();
@@ -97,11 +98,49 @@ public class SettingFragment extends PreferenceFragment {
                 manager.cancel(1000);
             }
         }
+        if ("notifPriority".equals(preference.getKey())) {
+            dialogs(NOTIF_PRIORITY_DIALOG, null, null);
+        }
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
 
-    public void dialogs(int dialogNum) {
+    public void dialogs(int dialogNum, String title, String message) {
         switch (dialogNum) {
+            case STANDARD_DIALOG:
+                break;
+
+            case NOTIF_PRIORITY_DIALOG:
+                itemString = new String[5];
+                itemString[0] = getString(R.string.notif1);
+                itemString[1] = getString(R.string.notif2);
+                itemString[2] = getString(R.string.notif3);
+                itemString[3] = getString(R.string.notif4);
+                itemString[4] = getString(R.string.notif5);
+                index = recover_pre.getInt("notifPriority", 0) + 3;
+
+                SpannableStringBuilder titleDialog3 = new SpannableStringBuilder(getString(R.string.notifPriority_title_setting));
+                titleDialog3.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.green)), 0, getString(R.string.notifPriority_title_setting).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                AlertDialog.Builder dialog3 = null;
+                if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
+                    dialog3 = new AlertDialog.Builder(instance, R.style.AlertDialog);
+                } else {
+                    dialog3 = new AlertDialog.Builder(instance);
+                }
+                dialog3.setTitle(titleDialog3);
+                dialog3.setSingleChoiceItems(itemString, index, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        index = which;
+                        save_editor.putInt("notifPriority", index - 3).apply();
+                        MainActivity.instance.recreate();
+                        dialog.cancel();
+                    }
+                });
+                dialog3.show();
+
+                break;
+
             case SELF_DEFINE_DIALOG:
                 itemString = new String[11];
                 itemString[0] = getString(R.string.define_text);
@@ -118,17 +157,17 @@ public class SettingFragment extends PreferenceFragment {
 
                 index = recover_pre.getInt("selfDefine", 0) - 10;
 
-                SpannableStringBuilder titleDialog = new SpannableStringBuilder(getString(R.string.title_SelfDefine_dialog));
-                titleDialog.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.green)), 0, getString(R.string.title_SelfDefine_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                SpannableStringBuilder titleDialog1 = new SpannableStringBuilder(getString(R.string.title_SelfDefine_dialog));
+                titleDialog1.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.green)), 0, getString(R.string.title_SelfDefine_dialog).length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-                AlertDialog.Builder dialog;
+                AlertDialog.Builder dialog1 = null;
                 if (recover_pre_v.getBoolean("changeTheme_setting", false)) {
-                    dialog = new AlertDialog.Builder(instance, R.style.AlertDialog);
+                    dialog1 = new AlertDialog.Builder(instance, R.style.AlertDialog);
                 } else {
-                    dialog = new AlertDialog.Builder(instance);
+                    dialog1 = new AlertDialog.Builder(instance);
                 }
-                dialog.setTitle(titleDialog);
-                dialog.setSingleChoiceItems(itemString, index, new DialogInterface.OnClickListener() {
+                dialog1.setTitle(titleDialog1);
+                dialog1.setSingleChoiceItems(itemString, index, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         index = which;
@@ -137,7 +176,7 @@ public class SettingFragment extends PreferenceFragment {
                         dialog.cancel();
                     }
                 });
-                dialog.show();
+                dialog1.show();
         }
     }
 
