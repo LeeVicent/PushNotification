@@ -1,5 +1,5 @@
 [English](/README.md) | 中文
-# PushNotification
+# 推送通知
 一个简单的通知应用，用于帮助你安排你的计划。可以把你将要做的事放在通知栏里，也可以放一些知识点用于平时记忆。
 
 感谢酷安用户@various @xiaofei_dev 作品与想法
