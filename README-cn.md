@@ -18,5 +18,12 @@
 ## 截图
 | 主界面 | 自定义背景 | 更多菜单 |
 |:-:|:-:|:-:|
-| ![news](https://github.com/LeeVicent/PushNotification/master/screenshots/Screenshot_20180131-173316.jpg) 
-| ![drawer](https://raw.githubusercontent.com/ThirtyDegreesRay/OpenHub/master/art/drawer.png?raw=true) | ![profile](https://raw.githubusercontent.com/ThirtyDegreesRay/OpenHub/master/art/profile.png?raw=true) |
+| ![主界面](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-173316.jpg)| ![自定义背景](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-165331.jpg)| ![更多菜单](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-172932.jpg)
+
+| 通知栏 | 高亮对比 | 设置 |
+|:-:|:-:|:-:|
+| ![主界面](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-171812.jpg)| ![高亮对比](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-171044.jpg)| ![设置](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-160254.jpg)
+
+| 恢复 |  |  |
+|:-:|:-:|:-:|
+| ![恢复](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-172627.jpg)
