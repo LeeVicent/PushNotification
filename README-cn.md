@@ -18,4 +18,4 @@
 ## 截图
 | 主界面 | 自定义背景 | 更多菜单 |
 |:-:|:-:|:-:|
-| ![news](https://github.com/LeeVicent/raw/master/PushNotification/screenshots/Screenshot_20180131-173316.jpg)
+| ![主界面](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-173316.jpg)| ![news](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-173316.jpg)| ![news](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-173316.jpg)
