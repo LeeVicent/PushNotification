@@ -101,6 +101,11 @@ public class SettingFragment extends PreferenceFragment {
         if ("notifPriority".equals(preference.getKey())) {
             dialogs(NOTIF_PRIORITY_DIALOG, null, null);
         }
+        if ("mainActivityBgSelect".equals(preference.getKey())) {
+            if ( !recover_pre_v.getBoolean("mainActivityBg", false)) {
+                Toast.makeText(instance, R.string.openSettingFirst1_toast, Toast.LENGTH_SHORT).show();
+            }
+        }
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
 

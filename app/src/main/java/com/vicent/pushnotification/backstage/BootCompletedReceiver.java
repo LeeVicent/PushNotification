@@ -28,7 +28,7 @@ public class BootCompletedReceiver extends BroadcastReceiver {
         if (spGet_v.getBoolean("bootCompleted_setting", false)) {
             context.startActivity(new Intent(context, MainActivity.class));
         }
-        Log.i(this.getClass().getName(), "推动通知已启动");
+        Log.i(this.getClass().getName(), "推送通知已启动");
         //记得注释掉默认的throw
     }
 }

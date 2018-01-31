@@ -29,16 +29,12 @@
             android:title="@string/actionBar_title_setting"
             android:summary="@string/actionBar_summary_setting"
             android:widgetLayout="@layout/switch_layout" />
-        <Preference
-            android:key="selfDefine"
-            android:layout="@layout/preference_item"
-            android:title="@string/selfDefine_title_setting"
-            android:summary="@string/selfDefine_summary_setting"/>
+
     </PreferenceCategory>
 
     <PreferenceCategory
         android:layout="@layout/preference_category_widget"
-        android:title="@string/moreSetting_setting">
+        android:title="@string/notifSetting_setting">
         <CheckBoxPreference
             android:key="notifBarEntrance"
             android:layout="@layout/preference_item"
@@ -47,7 +43,7 @@
             android:widgetLayout="@layout/switch_layout" />
         <CheckBoxPreference
             android:key="notifOnGoing"
-            android:checked="true"
+            android:defaultValue="true"
             android:layout="@layout/preference_item"
             android:title="@string/notifOnGoing_title_setting"
             android:summary="@string/notifOnGoing_summary_setting"
@@ -57,6 +53,17 @@
             android:layout="@layout/preference_item"
             android:title="@string/notifPriority_title_setting"
             android:summary="@string/notifPriority_summary_setting" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:layout="@layout/preference_category_widget"
+        android:title="@string/customSetting_setting">
+        <Preference
+            android:key="selfDefine"
+            android:layout="@layout/preference_item"
+            android:title="@string/selfDefine_title_setting"
+            android:summary="@string/selfDefine_summary_setting"/>
         <CheckBoxPreference
             android:key="mainActivityBg"
             android:layout="@layout/preference_item"
@@ -76,7 +83,6 @@
             android:layout="@layout/preference_item"
             android:title="@string/history_title_setting"
             android:summary="@string/history_summary_setting" />
-
 
     </PreferenceCategory>
 

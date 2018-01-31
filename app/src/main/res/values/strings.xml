@@ -63,6 +63,7 @@
     <string name="cropCancel_toast">裁剪取消</string>
     <string name="permissionCancel_toast">授权取消</string>
     <string name="openSettingFirst_toast">请先在设置里开启“主界面背景”开关</string>
+    <string name="openSettingFirst1_toast">请先开启“主界面背景”开关</string>
 
     //menu
     <string name="revokeAll_menu">撤销所有通知</string>
@@ -84,10 +85,8 @@
     <string name="bootCompleted_summary_setting">请确认给予自启动权限</string>
     <string name="actionBar_title_setting">沉浸式状态栏</string>
     <string name="actionBar_summary_setting">使状态栏颜色等同于主题</string>
-    <string name="selfDefine_title_setting">自定义按钮</string>
-    <string name="selfDefine_summary_setting">可以将此按钮设置为列表中任意功能</string>
-    
-    <string name="moreSetting_setting">更多设置</string>
+
+    <string name="notifSetting_setting">通知设置</string>
     <string name="notifBarEntrance_title_setting">通知栏入口</string>
     <string name="notifBarEntrance_summary_setting">常驻通知栏显示快速入口</string>
     <string name="notifOnGoing_title_setting">通知常驻</string>
@@ -95,6 +94,9 @@
     <string name="notifPriority_title_setting">通知级别</string>
     <string name="notifPriority_summary_setting">5级最高，1级最低</string>
 
+    <string name="customSetting_setting">个性设置</string>
+    <string name="selfDefine_title_setting">自定义按钮</string>
+    <string name="selfDefine_summary_setting">可以将此按钮设置为列表中任意功能</string>
     <string name="mainActivityBg_title_setting">主界面背景</string>
     <string name="mainActivityBg_summary_setting">可以使用自定义图片作为主界面背景</string>
     <string name="mainActivityBgSelect_title_setting">选择图片</string>
@@ -104,7 +106,7 @@
 
     <string name="about_setting">关于</string>
     <string name="currentVersion_title_setting">当前版本</string>
-    <string name="currentVersion_summary_setting">V 1.0 Debug Version</string>
+    <string name="currentVersion_summary_setting">V 1.0 &#160;&#160;Debug Version</string>
     <string name="author_title_setting">作者</string>
     <string name="author_summary_setting">北风其凉</string>
 
@@ -116,9 +118,15 @@
 
 
     //通知优先级描述
-    <string name="notif1">1</string>
-    <string name="notif2">2</string>
-    <string name="notif3">3</string>
-    <string name="notif4">4</string>
-    <string name="notif5">5</string>
+    <string name="notif1">1级 &#160;&#160;状态栏无图标，锁屏不可见</string>
+    <string name="notif2">2级 &#160;&#160;同上，稍高于1级</string>
+    <string name="notif3">3级 &#160;&#160;状态栏有图标，锁屏可见 </string>
+    <string name="notif4">4级 &#160;&#160;推荐等级</string>
+    <string name="notif5">5级 &#160;&#160;最高，等同于入口通知等级</string>
+
+
+    //shortcuts
+    <string name="addNewNotif_shortcut">创建新通知</string>
+    <string name="settings_shortcut">设置</string>
+    <string name="shortcutDisabledMessage_shortcut">快捷方式已失效</string>
 </resources>

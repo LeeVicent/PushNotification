@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="settings"
+        android:enabled="true"
+        android:icon="@mipmap/settings"
+        android:shortcutShortLabel="@string/settings_shortcut"
+        android:shortcutLongLabel="@string/settings_shortcut"
+        android:shortcutDisabledMessage="@string/error_et">
+        <intent
+            android:action="android.intent.action.SHORTCUT_SETTING"
+            android:targetPackage="com.vicent.pushnotification"
+            android:targetClass="com.vicent.pushnotification.ui.activity.SettingActivity" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="addNewNotif"
+        android:enabled="true"
+        android:icon="@mipmap/add"
+        android:shortcutShortLabel="@string/addNewNotif_shortcut"
+        android:shortcutLongLabel="@string/addNewNotif_shortcut"
+        android:shortcutDisabledMessage="@string/error_et">
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetPackage="com.vicent.pushnotification"
+            android:targetClass="com.vicent.pushnotification.ui.activity.MainActivity" />
+        <!-- If your shortcut is associated with multiple intents, include them
+             here. The last intent in the list is what the user sees when they
+             launch this shortcut. -->
+    </shortcut>
+
+</shortcuts>

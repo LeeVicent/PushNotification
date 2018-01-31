@@ -19,15 +19,23 @@
             android:theme="@style/MainActivityTheme.Day">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts"/>
         </activity>
+
         <activity
             android:name=".ui.activity.SettingActivity"
             android:label="@string/title_activity_setting"
             android:launchMode="singleTask"
-            android:theme="@style/OtherActivityTheme.Day" />
+            android:theme="@style/OtherActivityTheme.Day">
+            <intent-filter>
+                <action android:name="android.intent.action.SHORTCUT_SETTING"/>
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".util.ImageTool"
             android:theme="@style/TranslucentTheme"/>
@@ -49,6 +57,7 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
         <provider
             android:authorities="com.vicent.pushnotification.MainActivity"
             android:name="android.support.v4.content.FileProvider"

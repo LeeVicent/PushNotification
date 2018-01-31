@@ -401,11 +401,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setContentTitle(title_text)
                 .setContentText(content_text)
                 .setSmallIcon(R.mipmap.polls_tap)   //小图标是必须设立的
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.polls_tap))
+                //.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.polls_tap))
                 .setContentIntent(pi)
                 .setOngoing(recover_pre_v.getBoolean("notifOnGoing", true))
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(content_text))
-                .setPriority(recover_pre.getInt("notifPriority", 2))
+                .setPriority(recover_pre.getInt("notifPriority", 1))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
         Notification notifications = notificationBulider.build();   //这里有待验证
         manager.notify(notifID,notifications);
@@ -447,7 +447,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         save_editor.apply();
 
         //清空数据库表Notification
-        db.delete("Notification", "id < ?", new String[] { "100" });   //还有人能用100条通知？
+        db.delete("Notification", "id < ?", new String[] { "1000" });   //还有人能用1000条通知？
         Toast.makeText(this, getString(R.string.revokeAllNotification_toast), Toast.LENGTH_SHORT).show();
     }
 
@@ -835,6 +835,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.setPositiveButton(R.string.open_autoCheck_dialog, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int which) {
+                alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_all_inclusive));
                 save_editor.putBoolean("autoCheck", true).apply();
             }
         });
@@ -847,6 +848,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.setNegativeButton(R.string.close_autoCheck_dialog, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_all_inclusive_close));
                 save_editor.putBoolean("autoCheck", false).apply();
             }
         });
@@ -1005,6 +1007,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void MinimalistModel(boolean isOpen) {
         if (isOpen) {
             save_editor.putBoolean("minimalistModel", true).apply();
+            //自定义按钮
             ScaleAnimation alarmAnim1 = new ScaleAnimation(
                     1.0f, 0.0f, 1.0f, 0.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f
             );
@@ -1019,7 +1022,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
             alarm_iv.startAnimation(alarmAnim1);
 
-            final TranslateAnimation revokeAnim = new TranslateAnimation(
+            TranslateAnimation revokeAnim = new TranslateAnimation(
                     Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_PARENT, -0.355f,
                     Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, 0.0f
             );
@@ -1219,6 +1222,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_power_settings_new));
                     save_editor_v.putBoolean("bootCompleted_setting", true).apply();
                 }
+                break;
 
             case IC_NOTE_ADD:
                 if (recover_pre_v.getBoolean("notifBarEntrance", false)) {
@@ -1236,7 +1240,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case IC_PHOTO:
                 if (recover_pre_v.getBoolean("mainActivityBg", false)) {
                     alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_photo_close));
-                    mainLayout.setBackground(null);
+                    if ( recover_pre_v.getBoolean("changeTheme_setting", false)) {
+                        mainLayout.setBackgroundColor(getResources().getColor(R.color.night_back));
+                    } else {
+                        mainLayout.setBackground(null);
+                    }
                     save_editor_v.putBoolean("mainActivityBg", false).apply();
                 } else {
                     alarm_iv.setImageDrawable(getDrawable(R.drawable.ic_photo));
@@ -1276,7 +1284,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setContentTitle(getString(R.string.notifBarEntrance_title))
                 .setContentText(getString(R.string.notifBarEntrance_content))
                 .setSmallIcon(R.mipmap.polls_tap)   //小图标是必须设立的
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_add))
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.polls_tap))
                 .setContentIntent(pi)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
