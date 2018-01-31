@@ -1,5 +1,3 @@
+English | [中文](/README-cn.md)
 # PushNotification
-一个简单的通知应用
-
-感谢酷安用户@various @xiaofei_dev 作品与想法
 
