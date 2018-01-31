@@ -24,6 +24,6 @@
 |:-:|:-:|:-:|
 | ![主界面](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-171812.jpg)| ![高亮对比](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-171044.jpg)| ![设置](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-160254.jpg)
 
-| 恢复 |  |  |
+| 恢复 | 自定义按钮 | 夜间主题 |
 |:-:|:-:|:-:|
-| ![恢复](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-172627.jpg)
+| ![恢复](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-172627.jpg)| ![自定义按钮](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-221602.jpg)| ![夜间主题](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-221802.jpg)
