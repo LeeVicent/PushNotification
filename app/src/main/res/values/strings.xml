@@ -100,7 +100,7 @@
     <string name="mainActivityBg_title_setting">主界面背景</string>
     <string name="mainActivityBg_summary_setting">可以使用自定义图片作为主界面背景</string>
     <string name="mainActivityBgSelect_title_setting">选择图片</string>
-    <string name="mainActivityBgSelect_summary_setting">裁剪图片备份地址：APN/custom.jpg\n请使用裁剪框给出的比例，这是最匹配的裁剪方式</string>
+    <string name="mainActivityBgSelect_summary_setting">裁剪图片备份地址：APN/custom.jpg</string>
     <string name="history_title_setting">历史记录</string>
     <string name="history_summary_setting">预留坑位，以后再填</string>
 

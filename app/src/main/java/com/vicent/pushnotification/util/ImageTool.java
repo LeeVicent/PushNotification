@@ -177,9 +177,10 @@ public class ImageTool extends AppCompatActivity {
                     intent.setDataAndType(data.getData(), "image/*");
                     // 设置裁剪
                     intent.putExtra("crop", "true");
-                    // aspectX , aspectY :宽高的比例       //裁剪按照比例裁剪
-                    intent.putExtra("aspectX", layoutWidth);
-                    intent.putExtra("aspectY", layoutHeight);
+
+                    // aspectX , aspectY :宽高的比例(比值不可太大)       //裁剪按照比例裁剪
+                    intent.putExtra("aspectX", 33);
+                    intent.putExtra("aspectY", 22);
                     // outputX , outputY : 裁剪图片宽高     //这个像素用来压缩，最终按照上面的比例选择，分辨率为outputX*outputY
                     intent.putExtra("outputX", layoutWidth);
                     intent.putExtra("outputY", layoutHeight);
@@ -233,6 +234,23 @@ public class ImageTool extends AppCompatActivity {
         super.onDestroy();
         MainActivity.instance.recreate();
     }
+
+
+    //辗转相除法
+    public int gcd(int a, int b) {
+        int temp;
+        if (a < b) {
+            temp = a;
+            a = b;
+            b = temp;
+        }
+        temp = a % b;
+        if (temp == 0)
+            return b;
+        else
+            return gcd(b, temp);
+    }
+
 }
 
 

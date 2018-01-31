@@ -25,14 +25,15 @@
     <android.support.design.widget.TextInputLayout
         android:id="@+id/title_layout"
         android:layout_width="240dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="25dp"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:textColorHint="?attr/attr_textHint">
 
         <AutoCompleteTextView
             android:id="@+id/title_auto"
-            android:layout_width="240dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:hint="@string/title_hint"
@@ -46,14 +47,15 @@
     <android.support.design.widget.TextInputLayout
         android:id="@+id/content_layout"
         android:layout_width="240dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="25dp"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_below="@id/title_layout"
         android:textColorHint="?attr/attr_textHint">
 
         <AutoCompleteTextView
             android:id="@+id/content_auto"
-            android:layout_width="240dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:hint="@string/content_hint"

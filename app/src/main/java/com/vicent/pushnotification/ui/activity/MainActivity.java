@@ -401,7 +401,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setContentTitle(title_text)
                 .setContentText(content_text)
                 .setSmallIcon(R.mipmap.polls_tap)   //小图标是必须设立的
-                //.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.polls_tap))
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.polls_tap))
                 .setContentIntent(pi)
                 .setOngoing(recover_pre_v.getBoolean("notifOnGoing", true))
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(content_text))
@@ -970,7 +970,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         message.what = WAIT_SERVICE_START;
                         handler.sendMessage(message);
                     }
-                }, 1000);
+                }, 300);
             }
         }).start();
     }
@@ -1036,6 +1036,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 @Override
                 public void onAnimationEnd(Animation animation) {
                     revoke_tv.clearAnimation();    //先清除动画，可以防止闪烁
+                    revoke_tv.setLeft((int)(recover_pre.getInt("mainLayoutWidth", 1) * 0.355));
                     revoke_tv.setVisibility(View.GONE);
                     revoke_tv = (TextView)findViewById(R.id.revoke1_tv);
                     revoke_tv.setVisibility(View.VISIBLE);
@@ -1284,7 +1285,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setContentTitle(getString(R.string.notifBarEntrance_title))
                 .setContentText(getString(R.string.notifBarEntrance_content))
                 .setSmallIcon(R.mipmap.polls_tap)   //小图标是必须设立的
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.polls_tap))
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.add))
                 .setContentIntent(pi)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX)

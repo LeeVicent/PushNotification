@@ -243,7 +243,7 @@ public class SettingFragment extends PreferenceFragment {
                 .setContentTitle(getString(R.string.notifBarEntrance_title))
                 .setContentText(getString(R.string.notifBarEntrance_content))
                 .setSmallIcon(R.mipmap.polls_tap)   //小图标是必须设立的
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_add))
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.add))
                 .setContentIntent(pi)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
