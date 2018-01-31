@@ -18,5 +18,4 @@
 ## 截图
 | 主界面 | 自定义背景 | 更多菜单 |
 |:-:|:-:|:-:|
-| ![news](https://github.com/LeeVicent/PushNotification/master/screenshots/Screenshot_20180131-173316.jpg) 
-| ![drawer](https://raw.githubusercontent.com/ThirtyDegreesRay/OpenHub/master/art/drawer.png?raw=true) | ![profile](https://raw.githubusercontent.com/ThirtyDegreesRay/OpenHub/master/art/profile.png?raw=true) |
+| ![news](https://github.com/LeeVicent/raw/master/PushNotification/screenshots/Screenshot_20180131-173316.jpg)
