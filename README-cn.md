@@ -27,3 +27,21 @@
 | 恢复 | 自定义按钮 | 夜间主题 |
 |:-:|:-:|:-:|
 | ![恢复](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-172627.jpg)| ![自定义按钮](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-221602.jpg)| ![夜间主题](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-221802.jpg)
+
+## 开源许可
+    Copyright (C) 2018 LeeVicent
+
+    Licensed under the GNU GENERAL PUBLIC LICENSE, Version 3.0 license;
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
