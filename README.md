@@ -10,7 +10,7 @@ Thanks for the works and ideas of the coolapk users @various and @xiaofei_dev.
 * All notifications are stored locally.
 * Supports unlimited notifications.
 * Support to modify the sent notification again.
-* Support to create shortcuts on android 7.1.
+* Support to create shortcuts on android 7.1+.
 * Supports the main interface background customization.
 * Supports PowerBoot.
 * Supports custom notification level.
