@@ -29,7 +29,8 @@
 | ![恢复](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-172627.jpg)| ![自定义按钮](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-221602.jpg)| ![夜间主题](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-221802.jpg)
 
 ## 开源许可
-    Copyright (C) 2018 LeeVicent
+
+    Copyright (C) 2018 LeeVicent
 
     Licensed under the GNU GENERAL PUBLIC LICENSE, Version 3.0 license;
 
