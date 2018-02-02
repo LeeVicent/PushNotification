@@ -12,5 +12,19 @@ Thanks for the works and ideas of the coolapk users @various and @xiaofei_dev.
 * Support to modify the sent notification again.
 * Support to create shortcuts on android 7.1.
 * Supports the main interface background customization.
-* 
+* Supports PowerBoot.
+* Supports custom notification level.
+
+## Screenshots
+| MainActivity | Custom BG | More Menu |
+|:-:|:-:|:-:|
+| ![MainActivity](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-173316.jpg)| ![custom bg](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-165331.jpg)| ![more menu](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-172932.jpg)
+
+| Notif Bar | Highlight Diff | Settings |
+|:-:|:-:|:-:|
+| ![Notif bar](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-171812.jpg)| ![Highlight diff](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-171044.jpg)| ![Settings](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-160254.jpg)
+
+| Recover Dialog | Custom Button | Night Theme |
+|:-:|:-:|:-:|
+| ![Recover dialog](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-172627.jpg)| ![Custom button](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-221602.jpg)| ![Night theme](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-221802.jpg)
 
