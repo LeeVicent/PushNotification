@@ -16,7 +16,7 @@ Thanks for the works and ideas of the coolapk users @various and @xiaofei_dev.
 * Supports custom notification level.
 
 ## Screenshots
-| MainActivity | Custom BG | More Menu |
+| Main Interface | Custom BG | More Menu |
 |:-:|:-:|:-:|
 | ![MainActivity](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-173316.jpg)| ![custom bg](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-165331.jpg)| ![more menu](https://github.com/LeeVicent/PushNotification/blob/master/screenshots/Screenshot_20180131-172932.jpg)
 
